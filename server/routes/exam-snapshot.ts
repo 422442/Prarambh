@@ -54,7 +54,7 @@ export async function handleExamSnapshot(request: Request, db: Client, env: Serv
 
   await db.execute({
     sql: "INSERT INTO snapshots (id, attempt_id, blob_url, kind, face_count, taken_at) VALUES (?, ?, ?, ?, ?, ?)",
-    args: [crypto.randomUUID(), attempt.id, blob.url, body.kind, body.faceCount, Math.floor(Date.now() / 1000)],
+    args: [crypto.randomUUID(), attempt.id, blob.url, body.kind, body.faceCount, Math.floor(Date.now() / 1000)] as any,
   });
 
   return json({ ok: true, stored: true });

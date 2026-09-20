@@ -15,8 +15,8 @@ export function getDb(env?: Partial<ServerEnv>): Client {
   if (cached) cached.client.close();
   const client = url.startsWith("file:")
     ? createClient({ url })
-    : createClient({ url, authToken });
-  cached = { url, authToken, client };
+    : createClient({ url, ...(authToken ? { authToken } : {}) });
+  cached = { url, ...(authToken ? { authToken } : {}), client };
   return client;
 }
 

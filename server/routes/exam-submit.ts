@@ -35,7 +35,7 @@ export async function handleExamSubmit(request: Request, db: Client, env: Server
     return json({ status: "submitted", submitReason: attempt.submit_reason });
   }
 
-  let reason: "manual" | "time_up" = body.reason;
+  let reason: "manual" | "time_up" = body.reason ?? "manual";
   if (now > attempt.ends_at + GRACE_SECONDS) {
     // Past deadline: finalize from saved answers with time_up semantics.
     reason = "time_up";

@@ -6,11 +6,16 @@
 import type { ServerEnv } from "./http";
 
 export function getEnv(overrides?: Partial<ServerEnv>): ServerEnv {
-  return {
+  const env: ServerEnv = {
     sessionSecret: overrides?.sessionSecret ?? process.env.SESSION_SECRET ?? "",
-    cronSecret: overrides?.cronSecret ?? process.env.CRON_SECRET,
-    blobToken: overrides?.blobToken ?? process.env.BLOB_READ_WRITE_TOKEN,
-    databaseUrl: overrides?.databaseUrl ?? process.env.TURSO_DATABASE_URL,
-    databaseAuthToken: overrides?.databaseAuthToken ?? process.env.TURSO_AUTH_TOKEN,
   };
+  const cron = overrides?.cronSecret ?? process.env.CRON_SECRET;
+  if (cron !== undefined) env.cronSecret = cron;
+  const blob = overrides?.blobToken ?? process.env.BLOB_READ_WRITE_TOKEN;
+  if (blob !== undefined) env.blobToken = blob;
+  const dbUrl = overrides?.databaseUrl ?? process.env.TURSO_DATABASE_URL;
+  if (dbUrl !== undefined) env.databaseUrl = dbUrl;
+  const dbAuth = overrides?.databaseAuthToken ?? process.env.TURSO_AUTH_TOKEN;
+  if (dbAuth !== undefined) env.databaseAuthToken = dbAuth;
+  return env;
 }

@@ -58,7 +58,7 @@ export async function toWebRequest(req: VercelLikeRequest): Promise<Request> {
       if (!headers.has("content-type")) headers.set("content-type", "application/json");
     }
   }
-  return new Request(url, { method, headers, body });
+  return new Request(url, { method, headers, body: body ?? null });
 }
 
 export async function sendWebResponse(web: Response, res: VercelLikeResponse): Promise<void> {
