@@ -1,0 +1,61 @@
+﻿question,option_a,option_b,option_c,option_d,correct
+"What does HTML stand for?","HyperText Markup Language","High Text Machine Language","HyperTool Multi Language","Home Tool Markup Language",A
+"Which data structure uses FIFO ordering?","Stack","Queue","Tree","Graph",B
+"What is the time complexity of binary search?","O(n)","O(n log n)","O(log n)","O(1)",C
+"Which protocol is used to send email?","FTP","SNMP","HTTP","SMTP",D
+"In SQL, which clause filters grouped rows?","HAVING","WHERE","ORDER BY","LIMIT",A
+"What does CSS stand for?","Computer Style Sheets","Cascading Style Sheets","Creative Style System","Coded Style Sheets",B
+"Which of these is NOT a JavaScript primitive?","string","symbol","array","bigint",C
+"What is the default port for HTTPS?","21","80","8080","443",D
+"Which sorting algorithm is stable?","Merge sort","Quick sort","Heap sort","Selection sort",A
+"RAM is an example of what kind of memory?","Non-volatile","Volatile","Optical","Magnetic",B
+"Which keyword declares a constant in JavaScript?","let","var","const","static",C
+"What does API stand for?","Applied Program Interface","Automatic Process Invocation","Advanced Program Input","Application Programming Interface",D
+"Which layer of the OSI model handles routing?","Network","Transport","Session","Physical",A
+"Git command to create a new branch?","git merge","git branch","git clone","git pull",B
+"Which is a NoSQL database?","PostgreSQL","MySQL","MongoDB","SQLite",C
+"Binary 1011 equals which decimal number?","9","13","12","11",D
+"What does CPU stand for?","Central Processing Unit","Computer Personal Unit","Central Program Utility","Control Processing Unit",A
+"Which HTTP status code means Not Found?","301","404","500","403",B
+"Which language runs natively in a browser?","Python","Java","JavaScript","C#",C
+"A pointer stores what?","A value","A string","A function","A memory address",D
+"What does HTML stand for? (set 2)","HyperText Markup Language","High Text Machine Language","HyperTool Multi Language","Home Tool Markup Language",A
+"Which data structure uses FIFO ordering? (set 2)","Stack","Queue","Tree","Graph",B
+"What is the time complexity of binary search? (set 2)","O(n)","O(n log n)","O(log n)","O(1)",C
+"Which protocol is used to send email? (set 2)","FTP","SNMP","HTTP","SMTP",D
+"In SQL, which clause filters grouped rows? (set 2)","HAVING","WHERE","ORDER BY","LIMIT",A
+"What does CSS stand for? (set 2)","Computer Style Sheets","Cascading Style Sheets","Creative Style System","Coded Style Sheets",B
+"Which of these is NOT a JavaScript primitive? (set 2)","string","symbol","array","bigint",C
+"What is the default port for HTTPS? (set 2)","21","80","8080","443",D
+"Which sorting algorithm is stable? (set 2)","Merge sort","Quick sort","Heap sort","Selection sort",A
+"RAM is an example of what kind of memory? (set 2)","Non-volatile","Volatile","Optical","Magnetic",B
+"Which keyword declares a constant in JavaScript? (set 2)","let","var","const","static",C
+"What does API stand for? (set 2)","Applied Program Interface","Automatic Process Invocation","Advanced Program Input","Application Programming Interface",D
+"Which layer of the OSI model handles routing? (set 2)","Network","Transport","Session","Physical",A
+"Git command to create a new branch? (set 2)","git merge","git branch","git clone","git pull",B
+"Which is a NoSQL database? (set 2)","PostgreSQL","MySQL","MongoDB","SQLite",C
+"Binary 1011 equals which decimal number? (set 2)","9","13","12","11",D
+"What does CPU stand for? (set 2)","Central Processing Unit","Computer Personal Unit","Central Program Utility","Control Processing Unit",A
+"Which HTTP status code means Not Found? (set 2)","301","404","500","403",B
+"Which language runs natively in a browser? (set 2)","Python","Java","JavaScript","C#",C
+"A pointer stores what? (set 2)","A value","A string","A function","A memory address",D
+"What does HTML stand for? (set 3)","HyperText Markup Language","High Text Machine Language","HyperTool Multi Language","Home Tool Markup Language",A
+"Which data structure uses FIFO ordering? (set 3)","Stack","Queue","Tree","Graph",B
+"What is the time complexity of binary search? (set 3)","O(n)","O(n log n)","O(log n)","O(1)",C
+"Which protocol is used to send email? (set 3)","FTP","SNMP","HTTP","SMTP",D
+"In SQL, which clause filters grouped rows? (set 3)","HAVING","WHERE","ORDER BY","LIMIT",A
+"What does CSS stand for? (set 3)","Computer Style Sheets","Cascading Style Sheets","Creative Style System","Coded Style Sheets",B
+"Which of these is NOT a JavaScript primitive? (set 3)","string","symbol","array","bigint",C
+"What is the default port for HTTPS? (set 3)","21","80","8080","443",D
+"Which sorting algorithm is stable? (set 3)","Merge sort","Quick sort","Heap sort","Selection sort",A
+"RAM is an example of what kind of memory? (set 3)","Non-volatile","Volatile","Optical","Magnetic",B
+"Which keyword declares a constant in JavaScript? (set 3)","let","var","const","static",C
+"What does API stand for? (set 3)","Applied Program Interface","Automatic Process Invocation","Advanced Program Input","Application Programming Interface",D
+"Which layer of the OSI model handles routing? (set 3)","Network","Transport","Session","Physical",A
+"Git command to create a new branch? (set 3)","git merge","git branch","git clone","git pull",B
+"Which is a NoSQL database? (set 3)","PostgreSQL","MySQL","MongoDB","SQLite",C
+"Binary 1011 equals which decimal number? (set 3)","9","13","12","11",D
+"What does CPU stand for? (set 3)","Central Processing Unit","Computer Personal Unit","Central Program Utility","Control Processing Unit",A
+"Which HTTP status code means Not Found? (set 3)","301","404","500","403",B
+"Which language runs natively in a browser? (set 3)","Python","Java","JavaScript","C#",C
+"A pointer stores what? (set 3)","A value","A string","A function","A memory address",D
