@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { registerParticipant, normalizeEmail, getAttempt } from "@/lib/quiz-store";
+import { useUserAgent } from "@/hooks/use-user-agent";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,9 +20,13 @@ function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { isDesktop } = useUserAgent();
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isDesktop) {
+      return navigate({ to: "/blocked" });
+    }
     const cleanName = name.trim();
     const cleanEmail = normalizeEmail(email);
     if (cleanName.length < 2) return setError("Please enter your full name.");
@@ -34,6 +39,12 @@ function LoginPage() {
     }
     const attempt = registerParticipant(cleanName, cleanEmail);
     navigate({ to: attempt.termsAcceptedAt ? "/exam" : "/terms" });
+  }
+
+  // Redirect mobile/tablet users to blocked page
+  if (!isDesktop) {
+    navigate({ to: "/blocked" });
+    return null;
   }
 
   return (

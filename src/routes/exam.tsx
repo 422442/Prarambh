@@ -163,7 +163,16 @@ function ExamPage() {
     }
     const autoSub = violationModal?.autoSubmitted;
     setViolationModal(null);
-    if (autoSub) submitExam("violations");
+    if (autoSub) {
+      submitExam("violations");
+    } else {
+      // Re-enter fullscreen mode after acknowledging violation
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {
+          // Ignore errors if fullscreen is not available or denied
+        });
+      }
+    }
   }
 
   if (!attempt || !email) return null;

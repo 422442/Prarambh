@@ -10,14 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as CheckRouteImport } from './routes/check'
 import { Route as ExamRouteImport } from './routes/exam'
 import { Route as SubmittedRouteImport } from './routes/submitted'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminParticipantsRouteImport } from './routes/admin/participants'
+import { Route as AdminQuestionsRouteImport } from './routes/admin/questions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlockedRoute = BlockedRouteImport.update({
+  id: '/blocked',
+  path: '/blocked',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckRoute = CheckRouteImport.update({
@@ -40,43 +50,114 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminParticipantsRoute = AdminParticipantsRouteImport.update({
+  id: '/admin/participants',
+  path: '/admin/participants',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminQuestionsRoute = AdminQuestionsRouteImport.update({
+  id: '/admin/questions',
+  path: '/admin/questions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/blocked': typeof BlockedRoute
   '/check': typeof CheckRoute
   '/exam': typeof ExamRoute
   '/submitted': typeof SubmittedRoute
   '/terms': typeof TermsRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/participants': typeof AdminParticipantsRoute
+  '/admin/questions': typeof AdminQuestionsRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/blocked': typeof BlockedRoute
   '/check': typeof CheckRoute
   '/exam': typeof ExamRoute
   '/submitted': typeof SubmittedRoute
   '/terms': typeof TermsRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/participants': typeof AdminParticipantsRoute
+  '/admin/questions': typeof AdminQuestionsRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/blocked': typeof BlockedRoute
   '/check': typeof CheckRoute
   '/exam': typeof ExamRoute
   '/submitted': typeof SubmittedRoute
   '/terms': typeof TermsRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/participants': typeof AdminParticipantsRoute
+  '/admin/questions': typeof AdminQuestionsRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/check' | '/exam' | '/submitted' | '/terms'
+  fullPaths:
+    | '/'
+    | '/blocked'
+    | '/check'
+    | '/exam'
+    | '/submitted'
+    | '/terms'
+    | '/admin/login'
+    | '/admin/participants'
+    | '/admin/questions'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/check' | '/exam' | '/submitted' | '/terms'
-  id: '__root__' | '/' | '/check' | '/exam' | '/submitted' | '/terms'
+  to:
+    | '/'
+    | '/blocked'
+    | '/check'
+    | '/exam'
+    | '/submitted'
+    | '/terms'
+    | '/admin/login'
+    | '/admin/participants'
+    | '/admin/questions'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/blocked'
+    | '/check'
+    | '/exam'
+    | '/submitted'
+    | '/terms'
+    | '/admin/login'
+    | '/admin/participants'
+    | '/admin/questions'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BlockedRoute: typeof BlockedRoute
   CheckRoute: typeof CheckRoute
   ExamRoute: typeof ExamRoute
   SubmittedRoute: typeof SubmittedRoute
   TermsRoute: typeof TermsRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminParticipantsRoute: typeof AdminParticipantsRoute
+  AdminQuestionsRoute: typeof AdminQuestionsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blocked': {
+      id: '/blocked'
+      path: '/blocked'
+      fullPath: '/blocked'
+      preLoaderRoute: typeof BlockedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/check': {
@@ -116,15 +204,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/participants': {
+      id: '/admin/participants'
+      path: '/admin/participants'
+      fullPath: '/admin/participants'
+      preLoaderRoute: typeof AdminParticipantsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/questions': {
+      id: '/admin/questions'
+      path: '/admin/questions'
+      fullPath: '/admin/questions'
+      preLoaderRoute: typeof AdminQuestionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BlockedRoute: BlockedRoute,
   CheckRoute: CheckRoute,
   ExamRoute: ExamRoute,
   SubmittedRoute: SubmittedRoute,
   TermsRoute: TermsRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminParticipantsRoute: AdminParticipantsRoute,
+  AdminQuestionsRoute: AdminQuestionsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
