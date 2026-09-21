@@ -9,17 +9,23 @@ import { handleAdminResetAll } from "../../server/routes/admin-reset-all";
 import { handleAdminParticipants } from "../../server/routes/admin-participants";
 import { handleAdminParticipantDetail } from "../../server/routes/admin-participant-detail";
 import { handleAdminReset } from "../../server/routes/admin-reset";
-import { handleAdminQuestionsList, handleAdminQuestionCreate } from "../../server/routes/admin-questions";
+import {
+  handleAdminQuestionsList,
+  handleAdminQuestionCreate,
+} from "../../server/routes/admin-questions";
 import { handleAdminQuestionsImport } from "../../server/routes/admin-questions-import";
-import { handleAdminQuestionUpdate, handleAdminQuestionDelete } from "../../server/routes/admin-question-item";
+import {
+  handleAdminQuestionUpdate,
+  handleAdminQuestionDelete,
+} from "../../server/routes/admin-question-item";
 
 function parsePath(url: string): string[] {
   // /api/admin/participants/abc123/reset → ["participants", "abc123", "reset"]
   return new URL(url).pathname.split("/").filter(Boolean).slice(2);
 }
 
-export default adapter((request) => {
-  const { env, db } = makeContext();
+export default adapter(async (request) => {
+  const { env, db } = await makeContext();
   const parts = parsePath(request.url);
   const sub = parts[0] ?? "";
 

@@ -8,6 +8,7 @@
  *
  * Structural types only — avoids a hard dependency on @vercel/node types.
  */
+import { errorResponse } from "./http";
 
 export interface VercelLikeRequest {
   method?: string;
@@ -102,11 +103,12 @@ export function adapter(
       const response = await core(request);
       await sendWebResponse(response, res);
     } catch (err) {
-      console.error("[api] adapter error:", err);
+      // Route handlers throw ApiError for expected failures (400/401/404/409/429),
+      // so this funnel is what maps them to the documented
+      // { error: { code, message } } body with the right HTTP status.
       try {
-        res.statusCode(500);
-        res.setHeader("content-type", "application/json");
-        res.end(JSON.stringify({ error: { code: "internal", message: "Something went wrong." } }));
+        const response = errorResponse(err, `${req.method ?? "GET"} ${req.url ?? "/"}`);
+        await sendWebResponse(response, res);
       } catch {
         /* response already sent */
       }

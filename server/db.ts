@@ -1,21 +1,48 @@
 /**
  * Turso (libSQL) database client + settings accessor.
  * A client is cached per URL so serverless invocations reuse the connection.
+ *
+ * The API deliberately uses the *fetch* entrypoint of `@libsql/client`
+ * (`@libsql/client/web`). The default Node entrypoint statically imports the
+ * `libsql` native addon, which resolves its platform binary through a dynamic
+ * `require(`@libsql/${target}`)`. Serverless bundlers (Vercel) cannot trace
+ * such a dynamic require, so the binary is missing inside the deployed
+ * function and every `/api/*` route dies at module load with
+ * `FUNCTION_INVOCATION_FAILED` — before any handler code runs, which is why
+ * the adapter's try/catch never produced a JSON error.
+ *
+ * The fetch client needs no native code, opens no sockets (HTTP protocol
+ * instead of WebSockets — what Turso recommends for serverless) and accepts
+ * `libsql://` URLs directly.
+ *
+ * The `.ts` scripts under scripts/ keep the Node entrypoint because they also
+ * support local `file:` databases.
  */
-import { createClient, type Client } from "@libsql/client";
+import { createClient, type Client } from "@libsql/client/web";
 import type { ServerEnv } from "./http";
 
 let cached: { url: string; authToken?: string; client: Client } | null = null;
 
+/** `libsql://host` / `turso://host` → `https://host`; the web client only speaks HTTP(S)/WS(S). */
+export function toHttpUrl(url: string): string {
+  if (url.startsWith("libsql://")) return `https://${url.slice("libsql://".length)}`;
+  if (url.startsWith("turso://")) return `https://${url.slice("turso://".length)}`;
+  return url;
+}
+
 export function getDb(env?: Partial<ServerEnv>): Client {
-  const url = env?.databaseUrl ?? process.env.TURSO_DATABASE_URL ?? "";
-  const authToken = env?.databaseAuthToken ?? process.env.TURSO_AUTH_TOKEN;
-  if (!url) throw new Error("TURSO_DATABASE_URL is not set");
+  const rawUrl = (env?.databaseUrl ?? process.env.TURSO_DATABASE_URL ?? "").trim();
+  const authToken = (env?.databaseAuthToken ?? process.env.TURSO_AUTH_TOKEN)?.trim();
+  if (!rawUrl) throw new Error("TURSO_DATABASE_URL is not set");
+  if (rawUrl.startsWith("file:")) {
+    throw new Error(
+      "TURSO_DATABASE_URL must be a remote libsql:// (or https://) Turso URL for the serverless API; local file: databases are only supported by the scripts.",
+    );
+  }
+  const url = toHttpUrl(rawUrl);
   if (cached && cached.url === url && cached.authToken === authToken) return cached.client;
   if (cached) cached.client.close();
-  const client = url.startsWith("file:")
-    ? createClient({ url })
-    : createClient({ url, ...(authToken ? { authToken } : {}) });
+  const client = createClient({ url, ...(authToken ? { authToken } : {}) });
   cached = { url, ...(authToken ? { authToken } : {}), client };
   return client;
 }

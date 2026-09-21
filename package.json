@@ -17,6 +17,9 @@
     "db:seed": "node --experimental-strip-types scripts/db-seed.ts",
     "db:seed-questions": "node --experimental-strip-types scripts/seed-questions.ts"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "overrides": {
     "rolldown": "1.2.1"
   },

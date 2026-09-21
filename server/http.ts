@@ -30,11 +30,11 @@ export function json(data: unknown, init?: { status?: number; headers?: HeadersI
   return new Response(JSON.stringify(data), { status: init?.status ?? 200, headers });
 }
 
-export function errorResponse(err: unknown): Response {
+export function errorResponse(err: unknown, context?: string): Response {
   if (err instanceof ApiError) {
     return json({ error: { code: err.code, message: err.message } }, { status: err.status });
   }
-  console.error("[api] unhandled error:", err);
+  console.error(`[api] unhandled error${context ? ` in ${context}` : ""}:`, err);
   return json({ error: { code: "internal", message: "Something went wrong." } }, { status: 500 });
 }
 

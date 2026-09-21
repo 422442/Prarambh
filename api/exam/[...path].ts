@@ -13,8 +13,8 @@ function getSubpath(url: string): string {
   return parts[2] ?? "";
 }
 
-export default adapter((request) => {
-  const { env, db } = makeContext();
+export default adapter(async (request) => {
+  const { env, db } = await makeContext();
   const sub = getSubpath(request.url);
 
   switch (sub) {
