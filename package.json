@@ -91,7 +91,6 @@
     "@types/papaparse": "^5.3.16",
     "@types/bcryptjs": "^2.4.6",
     "dotenv": "^17.3.1",
-    "vercel": "^48.3.1",
     "vitest": "^3.2.4",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",

@@ -2,9 +2,8 @@ import { adapter } from "../../server/vercel";
 import { makeContext } from "../../server/context";
 import { handleExamStart } from "../../server/routes/exam-start";
 import { handleExamStatus } from "../../server/routes/exam-status";
-import { handleExamAnswer } from "../../server/routes/exam-answer";
+import { handleExamAnswer, handleExamHeartbeat } from "../../server/routes/exam-answer";
 import { handleExamSubmit } from "../../server/routes/exam-submit";
-import { handleExamHeartbeat } from "../../server/routes/exam-heartbeat";
 import { handleExamSnapshot } from "../../server/routes/exam-snapshot";
 import { handleExamViolation } from "../../server/routes/exam-violation";
 
