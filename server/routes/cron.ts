@@ -7,7 +7,6 @@
 import type { Client } from "@libsql/client";
 import { json, ApiError, type ServerEnv } from "../http";
 import { finalizeExpiredAttempts } from "../attempt";
-import { getSettings } from "../db";
 
 export function assertCronSecret(request: Request, env: ServerEnv): void {
   const expected = env.cronSecret;
@@ -27,32 +26,3 @@ export async function handleCronFinalize(request: Request, db: Client, env: Serv
   return json({ ok: true, finalized });
 }
 
-/** GET /api/cron/cleanup — deletes snapshots older than the retention window. */
-export async function handleCronCleanup(request: Request, db: Client, env: ServerEnv): Promise<Response> {
-  assertCronSecret(request, env);
-  const settings = await getSettings(db);
-  const cutoff = Math.floor(Date.now() / 1000) - settings.snapshotRetentionDays * 24 * 60 * 60;
-
-  const rows = await db.execute({
-    sql: "SELECT id, blob_url FROM snapshots WHERE taken_at < ?",
-    args: [cutoff],
-  });
-
-  if (rows.rows.length > 0 && env.blobToken) {
-    try {
-      const { del } = await import("@vercel/blob");
-      await del(
-        rows.rows.map((r) => String(r.blob_url)),
-        { token: env.blobToken },
-      );
-    } catch (err) {
-      console.error("[cron-cleanup] blob deletion failed:", err);
-    }
-  }
-
-  if (rows.rows.length > 0) {
-    await db.execute({ sql: "DELETE FROM snapshots WHERE taken_at < ?", args: [cutoff] });
-  }
-
-  return json({ ok: true, deleted: rows.rows.length });
-}
