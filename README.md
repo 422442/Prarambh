@@ -35,18 +35,28 @@ Access the admin portal at `/admin/login` with your administrator credentials.
 
 ## Deployment notes (Vercel + Turso)
 
-The backend lives in `api/**` as Vercel Serverless Functions; the SPA is built to
-`dist/client`. Two invariants keep the deployment healthy:
+The backend is a set of Vercel Serverless Functions in `api/`, and the SPA is built
+to `dist/client`. Three invariants keep the deployment healthy:
 
-1. **Every `/api/*` route imports `server/db.ts`**, so whatever that file imports is
-   loaded on *every* cold start. It must therefore never pull in a native addon: it
-   uses the fetch entrypoint `@libsql/client/web` (no `libsql` binary, no WebSocket;
-   `libsql://…` is rewritten to `https://…`). Importing `@libsql/client` (the Node
-   entrypoint) instead loads `@libsql/<platform>` through a dynamic
-   ``require(`@libsql/${target}`)``, which serverless bundlers cannot trace — the
-   binary is then missing inside the function and **all** routes fail with
-   `FUNCTION_INVOCATION_FAILED` before any handler (or its error handling) can run.
-2. **Route errors are mapped in one funnel** (`server/vercel.ts` → `errorResponse`),
+1. **`api/**` only contains generated bundles — never edit them.** The real sources
+   live in `server/entrypoints/**` (thin adapters: path parsing + `server/routes/**`
+   handlers). `npm run build:api` bundles each entry into a single self-contained ESM
+   file in `api/`, and `npm run build` runs that, then `npm run check:functions`, then
+   `vite build`. This matters because the project sets `"type": "module"`, so Vercel
+   runs those files as **native Node ESM**: relative imports would need explicit
+   `.js` extensions, and Vercel's dependency tracer parses files with acorn (it cannot
+   read TypeScript types), so a shared multi-file TypeScript graph inside the function
+   path is fragile. Bundling removes relative imports and shared-file tracing
+   entirely; only npm packages are resolved, which the tracer handles. Committing the
+   bundles keeps every deploy deterministic even if a build step is skipped.
+2. **The database driver must stay native-free.** `server/db.ts` uses the fetch
+   entrypoint `@libsql/client/web` (no `libsql` binary, no WebSocket; `libsql://…` is
+   rewritten to `https://…`). Importing `@libsql/client` (the Node entrypoint) loads
+   `@libsql/<platform>` through a dynamic ``require(`@libsql/${target}`)``, which
+   serverless bundlers cannot trace — the binary is missing inside the function and
+   **all** routes fail with `FUNCTION_INVOCATION_FAILED` before any handler (or its
+   error handling) can run.
+3. **Route errors are mapped in one funnel** (`server/vercel.ts` → `errorResponse`),
    which keeps the documented `{ "error": { "code", "message" } }` contract with
    statuses such as 400 / 401 / 409 / 429. Handlers therefore just throw `ApiError`.
 
@@ -62,6 +72,10 @@ curl -s https://<deployment>/api/health   # {"ok":true,…}      → additionall
 third-party imports, so it still responds when another dependency breaks — make it
 the first stop when something returns 5xx.
 
-`npm test` runs `tests/api-smoke.test.ts`, which drives the real adapter and, when
-`TURSO_DATABASE_URL` is configured, a real Turso connection — so a regression like
-the one above fails locally instead of in production.
+Locally:
+
+```sh
+npm run build:api        # regenerate api/ bundles from server/entrypoints/
+npm run check:functions  # load every bundle as native ESM (guards the failure above)
+npm test                 # real adapter + real Turso round trip (tests/api-smoke.test.ts)
+```

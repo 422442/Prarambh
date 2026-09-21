@@ -9,15 +9,15 @@
  *
  * Run: npm test
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { Buffer } from "node:buffer";
 import { describe, expect, it } from "vitest";
 
 import type { VercelLikeRequest, VercelLikeResponse } from "../server/vercel";
-import timeRoute from "../api/time";
-import healthRoute from "../api/health";
-import adminRoute from "../api/admin/[...path]";
-import examRoute from "../api/exam/[...path]";
+import timeRoute from "../server/entrypoints/time";
+import healthRoute from "../server/entrypoints/health";
+import adminRoute from "../server/entrypoints/admin/[...path]";
+import examRoute from "../server/entrypoints/exam/[...path]";
 
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
@@ -149,5 +149,27 @@ describe("serverless API surface", () => {
 
     expect(status).toBe(404);
     expect(json).toMatchObject({ error: "not found" });
+  });
+});
+
+describe("generated /api bundles", () => {
+  function collectJs(dir: string, out: string[] = []): string[] {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) collectJs(full, out);
+      else if (entry.name.endsWith(".js")) out.push(full);
+    }
+    return out;
+  }
+
+  it("ships self-contained ESM per route (no relative imports to resolve at cold start)", () => {
+    const bundles = collectJs("api");
+    expect(bundles.length).toBeGreaterThan(0);
+
+    for (const file of bundles) {
+      expect(readFileSync(file, "utf8"), `${file} must not use relative imports`).not.toMatch(
+        /(?:from|import\s*\()\s*["']\.\.?\//,
+      );
+    }
   });
 });

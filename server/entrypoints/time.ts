@@ -1,4 +1,4 @@
-import { adapter } from "../server/vercel";
+import { adapter } from "../vercel";
 
 /**
  * GET /api/time — dependency-free server clock.

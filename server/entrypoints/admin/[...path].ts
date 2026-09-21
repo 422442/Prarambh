@@ -1,23 +1,23 @@
-import { adapter } from "../../server/vercel";
-import { makeContext } from "../../server/context";
-import { handleAdminLogin } from "../../server/routes/admin-login";
-import { handleAdminSession, handleAdminLogout } from "../../server/routes/admin-session";
-import { handleAdminStats } from "../../server/routes/admin-stats";
-import { handleAdminExport } from "../../server/routes/admin-export";
-import { handleAdminSettingsUpdate } from "../../server/routes/admin-settings";
-import { handleAdminResetAll } from "../../server/routes/admin-reset-all";
-import { handleAdminParticipants } from "../../server/routes/admin-participants";
-import { handleAdminParticipantDetail } from "../../server/routes/admin-participant-detail";
-import { handleAdminReset } from "../../server/routes/admin-reset";
+import { adapter } from "../../vercel";
+import { makeContext } from "../../context";
+import { handleAdminLogin } from "../../routes/admin-login";
+import { handleAdminSession, handleAdminLogout } from "../../routes/admin-session";
+import { handleAdminStats } from "../../routes/admin-stats";
+import { handleAdminExport } from "../../routes/admin-export";
+import { handleAdminSettingsUpdate } from "../../routes/admin-settings";
+import { handleAdminResetAll } from "../../routes/admin-reset-all";
+import { handleAdminParticipants } from "../../routes/admin-participants";
+import { handleAdminParticipantDetail } from "../../routes/admin-participant-detail";
+import { handleAdminReset } from "../../routes/admin-reset";
 import {
   handleAdminQuestionsList,
   handleAdminQuestionCreate,
-} from "../../server/routes/admin-questions";
-import { handleAdminQuestionsImport } from "../../server/routes/admin-questions-import";
+} from "../../routes/admin-questions";
+import { handleAdminQuestionsImport } from "../../routes/admin-questions-import";
 import {
   handleAdminQuestionUpdate,
   handleAdminQuestionDelete,
-} from "../../server/routes/admin-question-item";
+} from "../../routes/admin-question-item";
 
 function parsePath(url: string): string[] {
   // /api/admin/participants/abc123/reset → ["participants", "abc123", "reset"]

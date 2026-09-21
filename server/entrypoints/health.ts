@@ -7,7 +7,7 @@
  *
  * `ok: true` → 200, any failed check → 503 with the reason in the JSON body.
  */
-import { adapter } from "../server/vercel";
+import { adapter } from "../vercel";
 
 type Check = { ok: boolean; detail: string };
 
@@ -19,7 +19,7 @@ async function checkDatabase(): Promise<Check> {
   try {
     // Imported lazily so a driver failure is reported here instead of crashing
     // the function at cold start.
-    const { getDb } = await import("../server/db");
+    const { getDb } = await import("../db");
     const db = getDb();
     const result = await db.execute("SELECT COUNT(*) AS questions FROM questions");
     return {

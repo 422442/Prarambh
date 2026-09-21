@@ -25,6 +25,21 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Vercel
+.vercel/
+
+# Generated / scratch
+api-build.txt
+*.tsbuildinfo
+.tmp-*/
+
+# Local agent skills (vendored docs, not part of the app)
+.agents/
+skills-lock.json
+
+# One-off developer scripts
+check-db.ts
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

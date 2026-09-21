@@ -1,11 +1,11 @@
-import { adapter } from "../../server/vercel";
-import { makeContext } from "../../server/context";
-import { handleExamStart } from "../../server/routes/exam-start";
-import { handleExamStatus } from "../../server/routes/exam-status";
-import { handleExamAnswer, handleExamHeartbeat } from "../../server/routes/exam-answer";
-import { handleExamSubmit } from "../../server/routes/exam-submit";
-import { handleExamSnapshot } from "../../server/routes/exam-snapshot";
-import { handleExamViolation } from "../../server/routes/exam-violation";
+import { adapter } from "../../vercel";
+import { makeContext } from "../../context";
+import { handleExamStart } from "../../routes/exam-start";
+import { handleExamStatus } from "../../routes/exam-status";
+import { handleExamAnswer, handleExamHeartbeat } from "../../routes/exam-answer";
+import { handleExamSubmit } from "../../routes/exam-submit";
+import { handleExamSnapshot } from "../../routes/exam-snapshot";
+import { handleExamViolation } from "../../routes/exam-violation";
 
 function getSubpath(url: string): string {
   const parts = new URL(url).pathname.split("/").filter(Boolean);

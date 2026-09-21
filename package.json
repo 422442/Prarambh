@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "node scripts/build-api.mjs && node scripts/check-functions.mjs && vite build",
+    "build:api": "node scripts/build-api.mjs",
+    "check:functions": "node scripts/check-functions.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -18,7 +20,7 @@
     "db:seed-questions": "node --experimental-strip-types scripts/seed-questions.ts"
   },
   "engines": {
-    "node": "22.x"
+    "node": "24.x"
   },
   "overrides": {
     "rolldown": "1.2.1"
@@ -94,6 +96,7 @@
     "@types/papaparse": "^5.3.16",
     "@types/bcryptjs": "^2.4.6",
     "dotenv": "^17.3.1",
+    "esbuild": "^0.28.2",
     "vitest": "^3.2.4",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
