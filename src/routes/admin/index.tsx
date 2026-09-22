@@ -14,13 +14,15 @@ export const Route = createFileRoute("/admin/")({
 });
 
 interface Stats {
-  total: number;
+  registered: number;
   inProgress: number;
   submitted: number;
+  flagged: number;
   avgScore: number | null;
-  highestScore: number | null;
-  lowestScore: number | null;
-  violationCount: number;
+  avgTimeSeconds: number | null;
+  activeQuestions: number;
+  questionCount: number;
+  examOpen: boolean;
 }
 
 function AdminDashboardPage() {
@@ -66,7 +68,7 @@ function AdminDashboardPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div className="surface-card p-6 border border-border/80">
           <div className="text-sm text-slate mb-1">Total Participants</div>
-          <div className="text-3xl font-bold text-foreground">{stats?.total ?? 0}</div>
+          <div className="text-3xl font-bold text-foreground">{stats?.registered ?? 0}</div>
         </div>
         <div className="surface-card p-6 border border-border/80">
           <div className="text-sm text-slate mb-1">In Progress</div>
@@ -77,15 +79,15 @@ function AdminDashboardPage() {
           <div className="text-3xl font-bold text-deep-green">{stats?.submitted ?? 0}</div>
         </div>
         <div className="surface-card p-6 border border-border/80">
-          <div className="text-sm text-slate mb-1">Violations</div>
-          <div className="text-3xl font-bold text-coral">{stats?.violationCount ?? 0}</div>
+          <div className="text-sm text-slate mb-1">Violations / Flagged</div>
+          <div className="text-3xl font-bold text-coral">{stats?.flagged ?? 0}</div>
         </div>
       </div>
 
-      {/* Score Stats */}
-      {stats && stats.submitted > 0 && (
+      {/* Summary Details */}
+      {stats && (
         <div className="mt-6 surface-card p-6 border border-border/80">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Score Summary</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Exam & Score Summary</h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <div className="text-xs text-slate mb-1">Average Score</div>
@@ -94,15 +96,15 @@ function AdminDashboardPage() {
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate mb-1">Highest Score</div>
+              <div className="text-xs text-slate mb-1">Average Time</div>
               <div className="text-2xl font-semibold text-deep-green">
-                {stats.highestScore !== null ? stats.highestScore.toFixed(1) : "—"}
+                {stats.avgTimeSeconds !== null ? `${Math.round(stats.avgTimeSeconds / 60)} mins` : "—"}
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate mb-1">Lowest Score</div>
-              <div className="text-2xl font-semibold text-coral">
-                {stats.lowestScore !== null ? stats.lowestScore.toFixed(1) : "—"}
+              <div className="text-xs text-slate mb-1">Active Questions</div>
+              <div className="text-2xl font-semibold text-foreground">
+                {stats.activeQuestions ?? stats.questionCount ?? 60}
               </div>
             </div>
           </div>

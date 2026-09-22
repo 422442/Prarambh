@@ -23,6 +23,7 @@ interface Question {
 
 function AdminQuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -30,10 +31,26 @@ function AdminQuestionsPage() {
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        const res = await fetch("/api/admin/questions");
+        const res = await fetch("/api/admin/questions?pageSize=200");
         if (!res.ok) throw new Error("Failed to fetch questions");
         const data = await res.json();
-        setQuestions(data.questions || []);
+        
+        const rawRows = Array.isArray(data.rows) ? data.rows : Array.isArray(data.questions) ? data.questions : [];
+        const parsed: Question[] = rawRows.map((q: any) => ({
+          id: String(q.id),
+          text: String(q.text),
+          options: q.options || {
+            A: String(q.optionA ?? q.option_a ?? ""),
+            B: String(q.optionB ?? q.option_b ?? ""),
+            C: String(q.optionC ?? q.option_c ?? ""),
+            D: String(q.optionD ?? q.option_d ?? ""),
+          },
+          correct: String(q.correctOption ?? q.correct_option ?? q.correct ?? "A"),
+          is_active: q.isActive ?? q.is_active ?? true,
+        }));
+
+        setQuestions(parsed);
+        setTotalCount(data.total ?? parsed.length);
       } catch (err) {
         setError("Failed to load questions");
       } finally {
@@ -56,7 +73,7 @@ function AdminQuestionsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <span className="text-sm text-slate">{questions.length} questions total</span>
+        <span className="text-sm text-slate">{totalCount || questions.length} questions total</span>
       </div>
 
       {loading && <div className="text-center py-12 text-slate">Loading questions...</div>}

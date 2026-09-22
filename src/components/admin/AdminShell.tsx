@@ -58,7 +58,7 @@ export function AdminShell({ title, children }: AdminShellProps) {
               to="/admin/questions"
               className="text-slate hover:text-foreground [&.active]:text-deep-green"
             >
-              Questions (60)
+              Questions
             </Link>
           </nav>
         </div>

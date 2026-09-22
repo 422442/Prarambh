@@ -20,7 +20,7 @@ interface Participant {
   id: string;
   name: string;
   email: string;
-  status: "in_progress" | "submitted";
+  status: "registered" | "in_progress" | "submitted";
   score: number | null;
   correct_count: number | null;
   violation_count: number;
@@ -30,6 +30,7 @@ interface Participant {
 
 function AdminParticipantsPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -37,10 +38,25 @@ function AdminParticipantsPage() {
   useEffect(() => {
     async function fetchParticipants() {
       try {
-        const res = await fetch("/api/admin/participants");
+        const res = await fetch("/api/admin/participants?pageSize=100");
         if (!res.ok) throw new Error("Failed to fetch participants");
         const data = await res.json();
-        setParticipants(data.participants || []);
+        
+        const rawRows = Array.isArray(data.rows) ? data.rows : Array.isArray(data.participants) ? data.participants : [];
+        const parsed: Participant[] = rawRows.map((p: any) => ({
+          id: String(p.participantId || p.id),
+          name: String(p.name ?? ""),
+          email: String(p.email ?? ""),
+          status: p.status === "submitted" ? "submitted" : p.status === "in_progress" ? "in_progress" : "registered",
+          score: p.score ?? null,
+          correct_count: p.correct ?? p.correct_count ?? null,
+          violation_count: Number(p.violations ?? p.violation_count ?? 0),
+          started_at: p.startedAt ?? p.started_at ?? null,
+          submitted_at: p.submittedAt ?? p.submitted_at ?? null,
+        }));
+
+        setParticipants(parsed);
+        setTotalCount(data.total ?? parsed.length);
       } catch (err) {
         setError("Failed to load participants");
       } finally {
@@ -105,10 +121,12 @@ function AdminParticipantsPage() {
                             className={
                               p.status === "submitted"
                                 ? "inline-block rounded-full bg-pale-green px-2.5 py-0.5 text-xs font-medium text-deep-green"
-                                : "inline-block rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                                : p.status === "in_progress"
+                                ? "inline-block rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                                : "inline-block rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-slate"
                             }
                           >
-                            {p.status === "submitted" ? "Submitted" : "In Progress"}
+                            {p.status === "submitted" ? "Submitted" : p.status === "in_progress" ? "In Progress" : "Registered"}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right font-mono">
