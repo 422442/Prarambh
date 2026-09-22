@@ -181,7 +181,11 @@ async function toWebRequest(req) {
   return new Request(url, { method, headers, body: body ?? null });
 }
 async function sendWebResponse(web, res) {
-  res.statusCode(web.status);
+  if (typeof res.status === "function") {
+    res.status(web.status);
+  } else {
+    res.statusCode = web.status;
+  }
   web.headers.forEach((value, name) => {
     if (name.toLowerCase() === "set-cookie") return;
     res.setHeader(name, value);

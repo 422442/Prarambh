@@ -52,14 +52,10 @@ async function invoke(
   headers: Record<string, string | string[] | undefined>;
   json: unknown;
 }> {
-  let status = 0;
   let payload = "";
   const headers: Record<string, string | string[] | undefined> = {};
   const res: VercelLikeResponse = {
-    statusCode(value) {
-      status = value;
-      return value;
-    },
+    statusCode: 200,
     setHeader(name, value) {
       headers[name.toLowerCase()] = value;
       return value;
@@ -74,7 +70,7 @@ async function invoke(
   };
 
   await handler(req, res);
-  return { status, headers, json: payload ? JSON.parse(payload) : null };
+  return { status: res.statusCode, headers, json: payload ? JSON.parse(payload) : null };
 }
 
 describe("serverless API surface", () => {

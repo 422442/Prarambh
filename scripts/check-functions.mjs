@@ -54,12 +54,8 @@ const canary = path.join(apiDir, "time.js");
 if (fs.existsSync(canary)) {
   const handler = (await import(pathToFileURL(canary).href)).default;
   const res = {
-    status: 0,
+    statusCode: 200,
     body: "",
-    statusCode(value) {
-      this.status = value;
-      return value;
-    },
     setHeader() {},
     getHeader() {},
     end(body) {
@@ -74,11 +70,11 @@ if (fs.existsSync(canary)) {
     },
     res,
   );
-  if (res.status !== 200) {
+  if (res.statusCode !== 200) {
     failures += 1;
-    console.error(`FAIL /api/time -> ${res.status} ${res.body}`);
+    console.error(`FAIL /api/time -> ${res.statusCode} ${res.body}`);
   } else {
-    console.log(`OK   /api/time -> ${res.status} ${res.body}`);
+    console.log(`OK   /api/time -> ${res.statusCode} ${res.body}`);
   }
 }
 

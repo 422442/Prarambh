@@ -21,7 +21,8 @@ export interface VercelLikeRequest {
 }
 
 export interface VercelLikeResponse {
-  statusCode(value: number): unknown;
+  statusCode: number;
+  status?: (value: number) => unknown;
   setHeader(name: string, value: string | string[]): unknown;
   getHeader(name: string): string | string[] | number | undefined;
   end(payload?: unknown): unknown;
@@ -66,7 +67,11 @@ export async function toWebRequest(req: VercelLikeRequest): Promise<Request> {
 }
 
 export async function sendWebResponse(web: Response, res: VercelLikeResponse): Promise<void> {
-  res.statusCode(web.status);
+  if (typeof res.status === "function") {
+    res.status(web.status);
+  } else {
+    res.statusCode = web.status;
+  }
   web.headers.forEach((value, name) => {
     if (name.toLowerCase() === "set-cookie") return; // handled below (multiple values)
     res.setHeader(name, value);
