@@ -28,10 +28,7 @@ export type ViolationTimestamps = {
   lastSameTypeAtMs: number | null;
 };
 
-export function shouldCountViolation(
-  prev: ViolationTimestamps,
-  nowMs: number,
-): boolean {
+export function shouldCountViolation(prev: ViolationTimestamps, nowMs: number): boolean {
   if (prev.lastAnyAtMs !== null && nowMs - prev.lastAnyAtMs < BURST_WINDOW_MS) return false;
   if (prev.lastSameTypeAtMs !== null && nowMs - prev.lastSameTypeAtMs < SAME_TYPE_WINDOW_MS)
     return false;

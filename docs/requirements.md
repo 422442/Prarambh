@@ -1,20 +1,20 @@
 # Tech Quiz Entrance — Requirements
 
-Source of truth: `TECH-QUIZ-ENTRANCE-DOCUMENTATION.md` (repo root; the doc's §4–§14).
+Source of truth: `docs/TECH-QUIZ-ENTRANCE-DOCUMENTATION.md` (the doc's §4–§14).
 Conflict rule: **the build prompt wins** over the doc wherever they disagree (noted inline as `[PROMPT]`).
 UI is frozen: no redesign, no restyle — only wiring + minimal new UI in existing tokens.
 
 ## 0. Conflicts & resolutions
 
-| # | Doc says | Resolution |
-|---|---|---|
-| C1 | Stack "Next.js (App Router)" | Repo is **TanStack Start (Vite, file-based TanStack Router)**. Frontend is frozen; backend is Vercel Serverless Functions under `/api` `[PROMPT]`. TanStack Start is switched to **SPA mode** (static build + SPA rewrites in `vercel.json`, `/api` excluded) so the mandated deployment model works. No UI change. |
-| C2 | Session cookie via jose JWT | Confirmed `[PROMPT]`: two separate sessions (participant, admin), HttpOnly+Secure+SameSite=Lax, bcryptjs for admin passwords. |
-| C3 | Question order stored as JSON `[{qid, options:[…]}]` | Confirmed `[PROMPT]`: questions **and options** shuffled per participant at start; order stored in `attempts.question_order`; answers always use **original option keys A–D**. |
-| C4 | Doc has no `session_id` on attempts | Added (prompt mandates single-active-session). |
-| C5 | Doc mentions "audit-logged" reset, rate-limited login without storage | Added `admin_audit` and `rate_limits` tables (Turso-backed; serverless has no shared memory). |
-| C6 | Doc edge case "name differs on second login → admin sees mismatch note" | Added `participants.last_login_name`. |
-| C7 | `DESIGN-cohere.md` referenced but missing | `src/styles.css` token block is the style source of truth. |
+| #   | Doc says                                                                | Resolution                                                                                                                                                                                                                                                                                                          |
+| --- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Stack "Next.js (App Router)"                                            | Repo is **TanStack Start (Vite, file-based TanStack Router)**. Frontend is frozen; backend is Vercel Serverless Functions under `/api` `[PROMPT]`. TanStack Start is switched to **SPA mode** (static build + SPA rewrites in `vercel.json`, `/api` excluded) so the mandated deployment model works. No UI change. |
+| C2  | Session cookie via jose JWT                                             | Confirmed `[PROMPT]`: two separate sessions (participant, admin), HttpOnly+Secure+SameSite=Lax, bcryptjs for admin passwords.                                                                                                                                                                                       |
+| C3  | Question order stored as JSON `[{qid, options:[…]}]`                    | Confirmed `[PROMPT]`: questions **and options** shuffled per participant at start; order stored in `attempts.question_order`; answers always use **original option keys A–D**.                                                                                                                                      |
+| C4  | Doc has no `session_id` on attempts                                     | Added (prompt mandates single-active-session).                                                                                                                                                                                                                                                                      |
+| C5  | Doc mentions "audit-logged" reset, rate-limited login without storage   | Added `admin_audit` and `rate_limits` tables (Turso-backed; serverless has no shared memory).                                                                                                                                                                                                                       |
+| C6  | Doc edge case "name differs on second login → admin sees mismatch note" | Added `participants.last_login_name`.                                                                                                                                                                                                                                                                               |
+| C7  | `DESIGN-cohere.md` referenced but missing                               | `src/styles.css` token block is the style source of truth.                                                                                                                                                                                                                                                          |
 
 ## 1. Participant flow
 
@@ -39,7 +39,6 @@ UI is frozen: no redesign, no restyle — only wiring + minimal new UI in existi
 - **FR-16** Submission is idempotent: double submit returns the same result, no double scoring. `time_taken_seconds = submitted_at − started_at` capped at duration. `submit_reason ∈ manual | time_up | violations | admin`.
 - **FR-17** Client auto-submits at 00:00 (`time_up`); server also finalizes expired attempts via (a) lazy finalization on any request touching them — including admin list/detail — and (b) Vercel Cron `GET /api/cron/finalize` guarded by `CRON_SECRET`.
 - **FR-18** Only one active session per attempt: new login regenerates `attempts.session_id`; older session gets a "session replaced" message.
-
 
 ## 3. Monitoring `[PROMPT]`
 

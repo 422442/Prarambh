@@ -21,14 +21,16 @@ if (!url) {
 }
 
 const authToken = url.startsWith("file:") ? undefined : process.env["TURSO_AUTH_TOKEN"];
-const db = url.startsWith("file:") ? createClient({ url }) : createClient({ url, authToken });
+const db = authToken ? createClient({ url, authToken }) : createClient({ url });
 
 async function main() {
   await db.execute(
     "CREATE TABLE IF NOT EXISTS _migrations (name TEXT PRIMARY KEY, applied_at INTEGER NOT NULL)",
   );
   const applied = new Set(
-    (await db.execute("SELECT name FROM _migrations ORDER BY name")).rows.map((r) => String(r.name)),
+    (await db.execute("SELECT name FROM _migrations ORDER BY name")).rows.map((r) =>
+      String(r.name),
+    ),
   );
 
   const dir = join(import.meta.dirname, "..", "migrations");
@@ -47,7 +49,10 @@ async function main() {
       .split(/;\s*\n/)
       .map((s) => s.replace(/^(\s*--[^\r\n]*\r?\n)+/g, "").trim())
       .filter((s) => s.length > 0);
-    await db.batch(statements.map((stmt) => ({ sql: stmt, args: [] })), "write");
+    await db.batch(
+      statements.map((stmt) => ({ sql: stmt, args: [] })),
+      "write",
+    );
     await db.execute({
       sql: "INSERT INTO _migrations (name, applied_at) VALUES (?, ?)",
       args: [file, Math.floor(Date.now() / 1000)],

@@ -43,9 +43,7 @@ function AdminQuestionsPage() {
     fetchQuestions();
   }, []);
 
-  const filtered = questions.filter((q) =>
-    q.text.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = questions.filter((q) => q.text.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <AdminShell title="Questions">
@@ -58,18 +56,12 @@ function AdminQuestionsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <span className="text-sm text-slate">
-          {questions.length} questions total
-        </span>
+        <span className="text-sm text-slate">{questions.length} questions total</span>
       </div>
 
-      {loading && (
-        <div className="text-center py-12 text-slate">Loading questions...</div>
-      )}
+      {loading && <div className="text-center py-12 text-slate">Loading questions...</div>}
 
-      {error && (
-        <div className="text-center py-12 text-destructive">{error}</div>
-      )}
+      {error && <div className="text-center py-12 text-destructive">{error}</div>}
 
       {!loading && !error && (
         <div className="space-y-4">
@@ -79,16 +71,11 @@ function AdminQuestionsPage() {
             </div>
           ) : (
             filtered.map((q, idx) => (
-              <div
-                key={q.id}
-                className="surface-card p-6 border border-border/80"
-              >
+              <div key={q.id} className="surface-card p-6 border border-border/80">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="mono-label text-xs text-slate">
-                        Q{idx + 1}
-                      </span>
+                      <span className="mono-label text-xs text-slate">Q{idx + 1}</span>
                       {q.is_active ? (
                         <span className="rounded-full bg-pale-green px-2 py-0.5 text-xs font-medium text-deep-green">
                           Active
@@ -110,8 +97,7 @@ function AdminQuestionsPage() {
                               : "bg-secondary/30 text-slate"
                           }`}
                         >
-                          <span className="mono-label font-semibold">{letter}:</span>{" "}
-                          {text}
+                          <span className="mono-label font-semibold">{letter}:</span> {text}
                         </div>
                       ))}
                     </div>

@@ -1,6 +1,6 @@
 # Tech Quiz Entrance — Design
 
-Companion to `docs/requirements.md`. Implements `TECH-QUIZ-ENTRANCE-DOCUMENTATION.md` §4–§12 with the prompt's overrides.
+Companion to `docs/requirements.md`. Implements `docs/TECH-QUIZ-ENTRANCE-DOCUMENTATION.md` §4–§12 with the prompt's overrides.
 
 ## 1. Architecture
 
@@ -148,11 +148,13 @@ CREATE TABLE rate_limits (               -- C5
 
 **Violation debounce** (`violations.ts`, pure fn tested):
 ```
+
 countViolation(prevLastAtMs, prevLastSameTypeAtMs, nowMs, type):
-  if now − lastAnyAt < 1500  → ignore            (one action = one violation)
-  if type == lastType && now − lastSameTypeAt < 5000 → ignore
-  else insert violation row, attempt.violation_count += 1
-  if violation_count >= max_violations → finalize("violations") → {count, autoSubmitted:true}
+if now − lastAnyAt < 1500 → ignore (one action = one violation)
+if type == lastType && now − lastSameTypeAt < 5000 → ignore
+else insert violation row, attempt.violation_count += 1
+if violation_count >= max_violations → finalize("violations") → {count, autoSubmitted:true}
+
 ```
 Client mirrors the same rule before reporting (`src/lib/monitoring/report.ts`).
 

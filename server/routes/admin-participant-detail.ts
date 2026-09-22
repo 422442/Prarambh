@@ -44,7 +44,10 @@ export async function handleAdminParticipantDetail(
       args: [attempt.id],
     });
     for (const row of aRows.rows) {
-      savedAnswers.set(String(row.question_id), row.selected_option == null ? null : String(row.selected_option));
+      savedAnswers.set(
+        String(row.question_id),
+        row.selected_option == null ? null : String(row.selected_option),
+      );
     }
 
     for (const entry of order) {

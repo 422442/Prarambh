@@ -20,7 +20,11 @@ const schema = z.object({
   selectedOption: z.enum(["A", "B", "C", "D"]).nullable(),
 });
 
-export async function handleExamAnswer(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleExamAnswer(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   const body = await readJson(request, schema);
   const claims = await requireParticipantClaims(request, env);
   const attemptRow = await getAttemptByParticipant(db, claims.sub);
@@ -61,7 +65,11 @@ export async function handleExamAnswer(request: Request, db: Client, env: Server
 }
 
 /** GET /api/exam/heartbeat (also POST) — lightweight resume/reconnect check. */
-export async function handleExamHeartbeat(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleExamHeartbeat(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   const claims = await requireParticipantClaims(request, env);
   const attemptRow = await getAttemptByParticipant(db, claims.sub);
   ensureAttemptSession(attemptRow, claims);

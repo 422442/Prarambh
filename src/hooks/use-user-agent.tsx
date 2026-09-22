@@ -11,18 +11,21 @@ export function useUserAgent() {
 
   React.useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
-    
+
     // Mobile detection
-    const mobileRegex = /android|webos|iphone|ipod|blackberry|iemobile|opera mini|mobile|mobiles|phone/i;
-    const isMobileDevice = mobileRegex.test(ua) || (ua.includes("android") && !ua.includes("mobile"));
-    
+    const mobileRegex =
+      /android|webos|iphone|ipod|blackberry|iemobile|opera mini|mobile|mobiles|phone/i;
+    const isMobileDevice =
+      mobileRegex.test(ua) || (ua.includes("android") && !ua.includes("mobile"));
+
     // Tablet detection
     const tabletRegex = /ipad|tablet|playbook|silk|kindle|android(?!.*mobile)/i;
-    const isTabletDevice = tabletRegex.test(ua) || (ua.includes("android") && !ua.includes("mobile"));
-    
+    const isTabletDevice =
+      tabletRegex.test(ua) || (ua.includes("android") && !ua.includes("mobile"));
+
     // Consider both mobile and tablet as non-desktop
     const isNonDesktop = isMobileDevice || isTabletDevice;
-    
+
     setIsMobile(isMobileDevice);
     setIsTablet(isTabletDevice);
     setIsDesktop(!isNonDesktop);

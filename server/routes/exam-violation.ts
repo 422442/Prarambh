@@ -15,14 +15,23 @@ import {
   type AttemptRow,
 } from "../attempt";
 import { requireParticipantClaims, ensureAttemptSession } from "../auth";
-import { shouldCountViolation, VIOLATION_TYPES, isAutoSubmit, type ViolationType } from "../violations";
+import {
+  shouldCountViolation,
+  VIOLATION_TYPES,
+  isAutoSubmit,
+  type ViolationType,
+} from "../violations";
 
 const schema = z.object({
   type: z.enum(VIOLATION_TYPES),
   meta: z.record(z.unknown()).optional(),
 });
 
-export async function handleExamViolation(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleExamViolation(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   const body = await readJson(request, schema);
   const claims = await requireParticipantClaims(request, env);
   const attemptRow = await getAttemptByParticipant(db, claims.sub);
@@ -86,7 +95,9 @@ export async function recordViolation(
     sql: "SELECT * FROM attempts WHERE id = ?",
     args: [attempt.id],
   });
-  return fresh.rows[0] ? mapAttempt(fresh.rows[0] as unknown as Record<string, unknown>).violation_count : attempt.violation_count + 1;
+  return fresh.rows[0]
+    ? mapAttempt(fresh.rows[0] as unknown as Record<string, unknown>).violation_count
+    : attempt.violation_count + 1;
 }
 
 export { mapAttempt };

@@ -5,7 +5,11 @@ import { getSettings } from "../db";
 import { getAttemptByParticipant, ensureNotExpired, parseQuestionOrder } from "../attempt";
 import { requireParticipantClaims, ensureAttemptSession } from "../auth";
 
-export async function handleExamStatus(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleExamStatus(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   const claims = await requireParticipantClaims(request, env);
   const settings = await getSettings(db);
 
@@ -33,7 +37,8 @@ export async function handleExamStatus(request: Request, db: Client, env: Server
       args: [attempt.id],
     });
     for (const row of rows.rows) {
-      answers[String(row.question_id)] = row.selected_option == null ? null : String(row.selected_option);
+      answers[String(row.question_id)] =
+        row.selected_option == null ? null : String(row.selected_option);
     }
   }
 

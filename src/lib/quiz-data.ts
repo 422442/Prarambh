@@ -1,4 +1,4 @@
-import questionsData from "../../prarambh_questions.json";
+import questionsData from "../data/prarambh_questions.json";
 
 export type OptionKey = "A" | "B" | "C" | "D";
 
@@ -23,15 +23,19 @@ export const ADMIN_EMAIL = "devnest.techclub@gmail.com";
 export const ADMIN_PASSWORD = "CTOPrarambh2026";
 
 function buildBank(): Question[] {
-  const list = (questionsData as { questions: Array<{
-    id: number;
-    question: string;
-    option_a: string;
-    option_b: string;
-    option_c: string;
-    option_d: string;
-    correct: string;
-  }> }).questions;
+  const list = (
+    questionsData as {
+      questions: Array<{
+        id: number;
+        question: string;
+        option_a: string;
+        option_b: string;
+        option_c: string;
+        option_d: string;
+        correct: string;
+      }>;
+    }
+  ).questions;
 
   return list.map((q) => ({
     id: `q-${String(q.id).padStart(3, "0")}`,

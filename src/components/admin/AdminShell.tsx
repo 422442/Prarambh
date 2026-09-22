@@ -64,9 +64,7 @@ export function AdminShell({ title, children }: AdminShellProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline text-xs text-slate">
-            devnest.techclub@gmail.com
-          </span>
+          <span className="hidden md:inline text-xs text-slate">devnest.techclub@gmail.com</span>
           <button
             type="button"
             onClick={handleLogout}

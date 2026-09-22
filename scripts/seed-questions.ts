@@ -22,9 +22,7 @@ if (!url) {
 
 async function main() {
   const authToken = url!.startsWith("file:") ? undefined : process.env["TURSO_AUTH_TOKEN"];
-  const db = url!.startsWith("file:")
-    ? createClient({ url: url! })
-    : createClient({ url: url!, authToken });
+  const db = authToken ? createClient({ url: url!, authToken }) : createClient({ url: url! });
 
   const csvPath = join(import.meta.dirname, "..", "migrations", "sample-questions.csv");
   const csv = readFileSync(csvPath, "utf8");
@@ -54,7 +52,17 @@ async function main() {
     if (inserted >= needed) break;
     await db.execute({
       sql: "INSERT INTO questions (id, text, option_a, option_b, option_c, option_d, correct_option, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)",
-      args: [randomUUID(), row.text, row.optionA, row.optionB, row.optionC, row.optionD, row.correctOption, now, now],
+      args: [
+        randomUUID(),
+        row.text,
+        row.optionA,
+        row.optionB,
+        row.optionC,
+        row.optionD,
+        row.correctOption,
+        now,
+        now,
+      ],
     });
     inserted += 1;
   }

@@ -18,9 +18,15 @@ export const Route = createFileRoute("/exam")({
   head: () => ({
     meta: [
       { title: "Exam in progress — Prarambh" },
-      { name: "description", content: "60 multiple-choice questions in 45 minutes. Answers save automatically." },
+      {
+        name: "description",
+        content: "60 multiple-choice questions in 45 minutes. Answers save automatically.",
+      },
       { property: "og:title", content: "Exam in progress — Prarambh" },
-      { property: "og:description", content: "60 multiple-choice questions in 45 minutes. Answers save automatically." },
+      {
+        property: "og:description",
+        content: "60 multiple-choice questions in 45 minutes. Answers save automatically.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -180,15 +186,17 @@ function ExamPage() {
   const totalQ = attempt.questionOrder.length;
   const isLastQuestion = totalQ > 0 && index === totalQ - 1;
 
-  const questionId = totalQ > 0 ? attempt.questionOrder[index] ?? "" : "";
+  const questionId = totalQ > 0 ? (attempt.questionOrder[index] ?? "") : "";
   const question = questionId ? questionById(questionId) : undefined;
-  const selected = questionId ? attempt.answers[questionId] ?? null : null;
+  const selected = questionId ? (attempt.answers[questionId] ?? null) : null;
   const lowTime = remaining <= 300;
 
   function select(option: OptionKey | null) {
     if (!questionId) return;
     saveAnswer(email!, questionId, option);
-    setAttempt((prev) => (prev ? { ...prev, answers: { ...prev.answers, [questionId]: option } } : prev));
+    setAttempt((prev) =>
+      prev ? { ...prev, answers: { ...prev.answers, [questionId]: option } } : prev,
+    );
   }
 
   return (
@@ -246,7 +254,8 @@ function ExamPage() {
           <section className="surface-card p-10 text-center shadow-sm border border-border/80 bg-card/95">
             <h2 className="text-2xl font-semibold text-foreground">No questions found</h2>
             <p className="mt-3 text-sm text-slate">
-              Question bank is currently empty. Please wait for organizers to upload the official exam questions.
+              Question bank is currently empty. Please wait for organizers to upload the official
+              exam questions.
             </p>
           </section>
         ) : (
@@ -468,8 +477,8 @@ function ExamPage() {
           <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <h2 className="text-xl font-semibold text-foreground">Submit your exam?</h2>
             <p className="mt-3 text-sm text-slate leading-relaxed">
-              {counts.answered} answered · {counts.unanswered} unanswered.
-              This action cannot be undone.
+              {counts.answered} answered · {counts.unanswered} unanswered. This action cannot be
+              undone.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button

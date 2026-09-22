@@ -186,7 +186,14 @@ async function sendWebResponse(web, res) {
     if (name.toLowerCase() === "set-cookie") return;
     res.setHeader(name, value);
   });
-  const cookies = web.headers.getSetCookie?.() ?? [];
+  let cookies = [];
+  if (typeof web.headers.getSetCookie === "function") {
+    cookies = web.headers.getSetCookie();
+  }
+  if (cookies.length === 0) {
+    const rawCookie = web.headers.get("set-cookie");
+    if (rawCookie) cookies = [rawCookie];
+  }
   if (cookies.length > 0) res.setHeader("set-cookie", cookies);
   const buffer = await web.arrayBuffer();
   if (buffer.byteLength > 0) {
@@ -296,46 +303,80 @@ async function handleAdminLogin(request, db, env) {
   const ip = ipOf(request);
   const bucketKey = createHash("sha256").update(`${ip}|${body.email}|admin_login`).digest("hex").slice(0, 40);
   const now = nowSec();
-  const limit = await db.execute({
-    sql: "SELECT window_start, fail_count FROM rate_limits WHERE id = ? AND bucket = 'admin_login'",
-    args: [bucketKey]
-  });
-  const row = limit.rows[0];
-  if (row) {
-    const windowStart = Number(row.window_start);
-    const expired = now - windowStart >= RATE_LIMIT_WINDOW_SEC;
-    if (!expired && Number(row.fail_count) >= RATE_LIMIT_MAX_FAILURES) {
-      throw new ApiError(429, "rate_limited", GENERIC_LOGIN_ERROR);
+  let row;
+  try {
+    const limit = await db.execute({
+      sql: "SELECT window_start, fail_count FROM rate_limits WHERE id = ? AND bucket = 'admin_login'",
+      args: [bucketKey]
+    });
+    row = limit.rows[0];
+    if (row) {
+      const windowStart = Number(row.window_start);
+      const expired = now - windowStart >= RATE_LIMIT_WINDOW_SEC;
+      if (!expired && Number(row.fail_count) >= RATE_LIMIT_MAX_FAILURES) {
+        throw new ApiError(429, "rate_limited", GENERIC_LOGIN_ERROR);
+      }
     }
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
   }
-  const admins = await db.execute({
-    sql: "SELECT id, email, password_hash FROM admins WHERE email = ?",
-    args: [body.email]
-  });
-  const admin = admins.rows[0];
+  let admin;
+  try {
+    const admins = await db.execute({
+      sql: "SELECT id, email, password_hash FROM admins WHERE email = ?",
+      args: [body.email]
+    });
+    admin = admins.rows[0];
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("no such table")) {
+      throw new ApiError(
+        500,
+        "db_not_migrated",
+        "Database is not migrated yet. Please run 'pnpm db:migrate' and 'pnpm db:seed'."
+      );
+    }
+    throw err;
+  }
   const ok = admin ? await bcrypt.compare(body.password, String(admin.password_hash)) : false;
   if (!ok || !admin) {
-    if (row && now - Number(row.window_start) < RATE_LIMIT_WINDOW_SEC) {
-      await db.execute({
-        sql: "UPDATE rate_limits SET fail_count = fail_count + 1 WHERE id = ?",
-        args: [bucketKey]
-      });
-    } else {
-      await db.execute({
-        sql: `INSERT INTO rate_limits (id, bucket, window_start, fail_count) VALUES (?, 'admin_login', ?, 1)
-              ON CONFLICT(id) DO UPDATE SET window_start = excluded.window_start, fail_count = excluded.fail_count`,
-        args: [bucketKey, now]
-      });
+    try {
+      if (row && now - Number(row.window_start) < RATE_LIMIT_WINDOW_SEC) {
+        await db.execute({
+          sql: "UPDATE rate_limits SET fail_count = fail_count + 1 WHERE id = ?",
+          args: [bucketKey]
+        });
+      } else {
+        await db.execute({
+          sql: `INSERT INTO rate_limits (id, bucket, window_start, fail_count) VALUES (?, 'admin_login', ?, 1)
+                ON CONFLICT(id) DO UPDATE SET window_start = excluded.window_start, fail_count = excluded.fail_count`,
+          args: [bucketKey, now]
+        });
+      }
+    } catch {
     }
     throw new ApiError(401, "unauthorized", GENERIC_LOGIN_ERROR);
   }
-  await db.execute({ sql: "DELETE FROM rate_limits WHERE id = ?", args: [bucketKey] });
-  await db.execute({
-    sql: "INSERT INTO admin_audit (id, admin_id, action, target, detail, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-    args: [randomUUID(), String(admin.id), "login", body.email, null, now]
-  });
-  const token = await signToken(env.sessionSecret, { sub: String(admin.id), role: "admin" }, ADMIN_MAX_AGE);
-  return json({ ok: true, email: String(admin.email) }, { headers: { "set-cookie": adminSetCookie(request, env, token) } });
+  try {
+    await db.execute({ sql: "DELETE FROM rate_limits WHERE id = ?", args: [bucketKey] });
+  } catch {
+  }
+  try {
+    await db.execute({
+      sql: "INSERT INTO admin_audit (id, admin_id, action, target, detail, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+      args: [randomUUID(), String(admin.id), "login", body.email, null, now]
+    });
+  } catch {
+  }
+  const token = await signToken(
+    env.sessionSecret,
+    { sub: String(admin.id), role: "admin" },
+    ADMIN_MAX_AGE
+  );
+  return json(
+    { ok: true, email: String(admin.email) },
+    { headers: { "set-cookie": adminSetCookie(request, env, token) } }
+  );
 }
 function ipOf(request) {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -353,7 +394,10 @@ async function handleAdminLogout(request, db, env) {
 }
 async function handleAdminSession(request, db, env) {
   const admin = await requireAdmin(request, env);
-  const rows = await db.execute({ sql: "SELECT email FROM admins WHERE id = ?", args: [admin.sub] });
+  const rows = await db.execute({
+    sql: "SELECT email FROM admins WHERE id = ?",
+    args: [admin.sub]
+  });
   const email = rows.rows[0] ? String(rows.rows[0].email) : null;
   return json({ authenticated: true, email });
 }
@@ -459,7 +503,10 @@ async function finalizeAttempt(db, attemptId, reason, submittedAtSec = nowSec(),
     args: [attemptId]
   });
   for (const row of answerRows.rows) {
-    answers.set(String(row.question_id), row.selected_option == null ? null : String(row.selected_option));
+    answers.set(
+      String(row.question_id),
+      row.selected_option == null ? null : String(row.selected_option)
+    );
   }
   let correct = 0;
   let wrong = 0;
@@ -496,7 +543,16 @@ async function finalizeAttempt(db, attemptId, reason, submittedAtSec = nowSec(),
               unanswered_count = ?,
               time_taken_seconds = ?
           WHERE id = ? AND status = 'in_progress'`,
-    args: [reason, submittedAt, scored.score, scored.correct, scored.wrong, scored.unanswered, taken, attemptId]
+    args: [
+      reason,
+      submittedAt,
+      scored.score,
+      scored.correct,
+      scored.wrong,
+      scored.unanswered,
+      taken,
+      attemptId
+    ]
   });
   const fresh = await getAttemptById(db, attemptId);
   return fresh ?? { ...existing, status: "submitted", submit_reason: reason, submitted_at: submittedAt };
@@ -580,7 +636,10 @@ async function handleAdminParticipants(request, db, env) {
   await finalizeExpiredAttempts(db);
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
-  const pageSize = Math.min(100, Math.max(5, Number(url.searchParams.get("pageSize") ?? "20") || 20));
+  const pageSize = Math.min(
+    100,
+    Math.max(5, Number(url.searchParams.get("pageSize") ?? "20") || 20)
+  );
   const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
   const status = url.searchParams.get("status") ?? "all";
   const flagged = url.searchParams.get("flagged") === "1";
@@ -777,7 +836,8 @@ async function handleAdminSettingsUpdate(request, db, env) {
   if (body.examOpen !== void 0) updates.push(["exam_open", body.examOpen ? "1" : "0"]);
   if (body.snapshotRetentionDays !== void 0)
     updates.push(["snapshot_retention_days", String(body.snapshotRetentionDays)]);
-  if (body.clampScoreAtZero !== void 0) updates.push(["clamp_score_at_zero", body.clampScoreAtZero ? "1" : "0"]);
+  if (body.clampScoreAtZero !== void 0)
+    updates.push(["clamp_score_at_zero", body.clampScoreAtZero ? "1" : "0"]);
   for (const [key2, value] of updates) {
     await db.execute({
       sql: "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
@@ -830,7 +890,10 @@ async function handleAdminParticipantDetail(request, db, env, participantId) {
       args: [attempt.id]
     });
     for (const row of aRows.rows) {
-      savedAnswers.set(String(row.question_id), row.selected_option == null ? null : String(row.selected_option));
+      savedAnswers.set(
+        String(row.question_id),
+        row.selected_option == null ? null : String(row.selected_option)
+      );
     }
     for (const entry of order) {
       const q = await db.execute({
@@ -975,7 +1038,10 @@ async function handleAdminQuestionsList(request, db, env) {
   await requireAdmin(request, env);
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
-  const pageSize = Math.min(200, Math.max(10, Number(url.searchParams.get("pageSize") ?? "100") || 100));
+  const pageSize = Math.min(
+    200,
+    Math.max(10, Number(url.searchParams.get("pageSize") ?? "100") || 100)
+  );
   const total = await db.execute({ sql: "SELECT COUNT(*) AS n FROM questions", args: [] });
   const rows = await db.execute({
     sql: "SELECT id, text, option_a, option_b, option_c, option_d, correct_option, is_active, created_at, updated_at FROM questions ORDER BY created_at ASC LIMIT ? OFFSET ?",
@@ -1003,13 +1069,28 @@ async function handleAdminQuestionCreate(request, db, env) {
   await requireAdmin(request, env);
   const body = await readJson(request, questionSchema);
   if (await hasAttemptInProgress(db)) {
-    throw new ApiError(409, "exam_in_progress", "Questions cannot be changed while an exam is in progress.");
+    throw new ApiError(
+      409,
+      "exam_in_progress",
+      "Questions cannot be changed while an exam is in progress."
+    );
   }
   const id = randomUUID3();
   const now = nowSec();
   await db.execute({
     sql: "INSERT INTO questions (id, text, option_a, option_b, option_c, option_d, correct_option, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    args: [id, body.text, body.optionA, body.optionB, body.optionC, body.optionD, body.correctOption, body.isActive ? 1 : 0, now, now]
+    args: [
+      id,
+      body.text,
+      body.optionA,
+      body.optionB,
+      body.optionC,
+      body.optionD,
+      body.correctOption,
+      body.isActive ? 1 : 0,
+      now,
+      now
+    ]
   });
   return json({ ok: true, id });
 }
@@ -1052,12 +1133,21 @@ function parseQuestionsCsv(csv) {
     const d = (data["option_d"] ?? "").trim();
     const correct = (data["correct"] ?? "").trim().toUpperCase();
     if (!text) errors.push({ row: rowNumber, message: "Question text is required." });
-    if (!a || !b || !c || !d) errors.push({ row: rowNumber, message: "All four options are required." });
+    if (!a || !b || !c || !d)
+      errors.push({ row: rowNumber, message: "All four options are required." });
     if (correct !== "A" && correct !== "B" && correct !== "C" && correct !== "D") {
       errors.push({ row: rowNumber, message: `"correct" must be A, B, C or D.` });
     }
     if (text && a && b && c && d && (correct === "A" || correct === "B" || correct === "C" || correct === "D")) {
-      rows.push({ row: rowNumber, text, optionA: a, optionB: b, optionC: c, optionD: d, correctOption: correct });
+      rows.push({
+        row: rowNumber,
+        text,
+        optionA: a,
+        optionB: b,
+        optionC: c,
+        optionD: d,
+        correctOption: correct
+      });
     }
   });
   return { rows, errors };
@@ -1077,7 +1167,11 @@ async function handleAdminQuestionsImport(request, db, env) {
   }
   if (body.importMode === "replace_all") {
     if (await hasAttemptInProgress(db)) {
-      throw new ApiError(409, "exam_in_progress", "Questions cannot be replaced while an exam is in progress.");
+      throw new ApiError(
+        409,
+        "exam_in_progress",
+        "Questions cannot be replaced while an exam is in progress."
+      );
     }
     const anyAttempt = await db.execute({ sql: "SELECT 1 FROM attempts LIMIT 1", args: [] });
     if (anyAttempt.rows.length > 0) {
@@ -1086,13 +1180,27 @@ async function handleAdminQuestionsImport(request, db, env) {
     await db.execute({ sql: "DELETE FROM answers", args: [] });
     await db.execute({ sql: "DELETE FROM questions", args: [] });
   } else if (await hasAttemptInProgress(db)) {
-    throw new ApiError(409, "exam_in_progress", "Questions cannot be added while an exam is in progress.");
+    throw new ApiError(
+      409,
+      "exam_in_progress",
+      "Questions cannot be added while an exam is in progress."
+    );
   }
   const now = nowSec();
   for (const row of rows) {
     await db.execute({
       sql: "INSERT INTO questions (id, text, option_a, option_b, option_c, option_d, correct_option, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)",
-      args: [randomUUID4(), row.text, row.optionA, row.optionB, row.optionC, row.optionD, row.correctOption, now, now]
+      args: [
+        randomUUID4(),
+        row.text,
+        row.optionA,
+        row.optionB,
+        row.optionC,
+        row.optionD,
+        row.correctOption,
+        now,
+        now
+      ]
     });
   }
   return json({ ok: true, inserted: rows.length, importMode: body.importMode });
@@ -1103,20 +1211,48 @@ init_db();
 async function handleAdminQuestionUpdate(request, db, env, questionId) {
   await requireAdmin(request, env);
   if (await hasAttemptInProgress(db)) {
-    throw new ApiError(409, "exam_in_progress", "Questions cannot be changed while an exam is in progress.");
+    throw new ApiError(
+      409,
+      "exam_in_progress",
+      "Questions cannot be changed while an exam is in progress."
+    );
   }
   const body = await readJson(request, questionSchema.partial());
-  const existing = await db.execute({ sql: "SELECT id FROM questions WHERE id = ?", args: [questionId] });
+  const existing = await db.execute({
+    sql: "SELECT id FROM questions WHERE id = ?",
+    args: [questionId]
+  });
   if (existing.rows.length === 0) throw new ApiError(404, "not_found", "Question not found.");
   const sets = [];
   const args = [];
-  if (body.text !== void 0) sets.push("text = ?"), args.push(body.text);
-  if (body.optionA !== void 0) sets.push("option_a = ?"), args.push(body.optionA);
-  if (body.optionB !== void 0) sets.push("option_b = ?"), args.push(body.optionB);
-  if (body.optionC !== void 0) sets.push("option_c = ?"), args.push(body.optionC);
-  if (body.optionD !== void 0) sets.push("option_d = ?"), args.push(body.optionD);
-  if (body.correctOption !== void 0) sets.push("correct_option = ?"), args.push(body.correctOption);
-  if (body.isActive !== void 0) sets.push("is_active = ?"), args.push(body.isActive ? 1 : 0);
+  if (body.text !== void 0) {
+    sets.push("text = ?");
+    args.push(body.text);
+  }
+  if (body.optionA !== void 0) {
+    sets.push("option_a = ?");
+    args.push(body.optionA);
+  }
+  if (body.optionB !== void 0) {
+    sets.push("option_b = ?");
+    args.push(body.optionB);
+  }
+  if (body.optionC !== void 0) {
+    sets.push("option_c = ?");
+    args.push(body.optionC);
+  }
+  if (body.optionD !== void 0) {
+    sets.push("option_d = ?");
+    args.push(body.optionD);
+  }
+  if (body.correctOption !== void 0) {
+    sets.push("correct_option = ?");
+    args.push(body.correctOption);
+  }
+  if (body.isActive !== void 0) {
+    sets.push("is_active = ?");
+    args.push(body.isActive ? 1 : 0);
+  }
   if (sets.length === 0) return json({ ok: true });
   sets.push("updated_at = ?");
   args.push(nowSec());
@@ -1127,9 +1263,16 @@ async function handleAdminQuestionUpdate(request, db, env, questionId) {
 async function handleAdminQuestionDelete(request, db, env, questionId) {
   await requireAdmin(request, env);
   if (await hasAttemptInProgress(db)) {
-    throw new ApiError(409, "exam_in_progress", "Questions cannot be changed while an exam is in progress.");
+    throw new ApiError(
+      409,
+      "exam_in_progress",
+      "Questions cannot be changed while an exam is in progress."
+    );
   }
-  const result = await db.execute({ sql: "DELETE FROM questions WHERE id = ?", args: [questionId] });
+  const result = await db.execute({
+    sql: "DELETE FROM questions WHERE id = ?",
+    args: [questionId]
+  });
   if (result.rowsAffected === 0) throw new ApiError(404, "not_found", "Question not found.");
   return json({ ok: true });
 }
@@ -1139,6 +1282,9 @@ function parsePath(url) {
   return new URL(url).pathname.split("/").filter(Boolean).slice(2);
 }
 var path_default = adapter(async (request) => {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204 });
+  }
   const { env, db } = await makeContext();
   const parts = parsePath(request.url);
   const sub = parts[0] ?? "";

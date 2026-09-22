@@ -29,8 +29,6 @@ export type OptionKey = (typeof OPTION_KEYS)[number];
 /** One entry of attempts.question_order (JSON). */
 export type OrderedQuestion = { qid: string; options: OptionKey[] };
 
-export function buildQuestionOrder(
-  questions: Array<{ id: string }>,
-): OrderedQuestion[] {
+export function buildQuestionOrder(questions: Array<{ id: string }>): OrderedQuestion[] {
   return shuffle(questions.map((q) => ({ qid: q.id, options: shuffle([...OPTION_KEYS]) })));
 }

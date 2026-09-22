@@ -6,7 +6,10 @@ export const Route = createFileRoute("/admin/participants")({
   head: () => ({
     meta: [
       { title: "Participants — Admin — Prarambh" },
-      { name: "description", content: "View and manage participants for the Prarambh entrance exam." },
+      {
+        name: "description",
+        content: "View and manage participants for the Prarambh entrance exam.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -50,7 +53,7 @@ function AdminParticipantsPage() {
   const filtered = participants.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.email.toLowerCase().includes(search.toLowerCase())
+      p.email.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -66,13 +69,9 @@ function AdminParticipantsPage() {
         />
       </div>
 
-      {loading && (
-        <div className="text-center py-12 text-slate">Loading participants...</div>
-      )}
+      {loading && <div className="text-center py-12 text-slate">Loading participants...</div>}
 
-      {error && (
-        <div className="text-center py-12 text-destructive">{error}</div>
-      )}
+      {error && <div className="text-center py-12 text-destructive">{error}</div>}
 
       {!loading && !error && (
         <>
@@ -118,21 +117,21 @@ function AdminParticipantsPage() {
                         <td className="px-4 py-3 text-right">
                           <span
                             className={
-                              p.violation_count > 0
-                                ? "text-coral font-medium"
-                                : "text-slate"
+                              p.violation_count > 0 ? "text-coral font-medium" : "text-slate"
                             }
                           >
                             {p.violation_count}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Link
-                            to={`/admin/participants/${p.id}`}
+                          <a
+                            href={`/api/admin/participants/${p.id}`}
+                            target="_blank"
+                            rel="noreferrer"
                             className="text-deep-green hover:underline text-xs font-medium"
                           >
                             View Details
-                          </Link>
+                          </a>
                         </td>
                       </tr>
                     ))

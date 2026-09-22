@@ -5,7 +5,11 @@ import { getSettings } from "../db";
 import { requireAdmin } from "../auth";
 import { finalizeExpiredAttempts } from "../attempt";
 
-export async function handleAdminStats(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleAdminStats(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   await requireAdmin(request, env);
 
   // Lazy finalization as part of admin reads.

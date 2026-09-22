@@ -9,7 +9,11 @@ const schema = z.object({
   termsVersion: z.string().min(1).max(32),
 });
 
-export async function handleTermsAccept(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleTermsAccept(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   const claims = await requireParticipantClaims(request, env);
   const body = await readJson(request, schema);
   const now = nowSec();
@@ -19,6 +23,7 @@ export async function handleTermsAccept(request: Request, db: Client, env: Serve
           WHERE id = ?`,
     args: [body.termsVersion, now, now, claims.sub],
   });
-  if (result.rowsAffected === 0) throw new ApiError(401, "unauthorized", "Please log in to continue.");
+  if (result.rowsAffected === 0)
+    throw new ApiError(401, "unauthorized", "Please log in to continue.");
   return json({ ok: true });
 }

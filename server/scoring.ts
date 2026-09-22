@@ -30,7 +30,10 @@ export function computeScore(
   };
 }
 
-export function timeTakenSeconds(startedAtSec: number, submittedAtSec: number, durationSec: number): number {
+export function timeTakenSeconds(
+  startedAtSec: number,
+  submittedAtSec: number,
+  durationSec: number,
+): number {
   return Math.min(Math.max(0, submittedAtSec - startedAtSec), durationSec);
 }
-

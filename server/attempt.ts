@@ -54,7 +54,10 @@ export function mapAttempt(row: RawRow): AttemptRow {
   };
 }
 
-export async function getAttemptByParticipant(db: Client, participantId: string): Promise<AttemptRow | null> {
+export async function getAttemptByParticipant(
+  db: Client,
+  participantId: string,
+): Promise<AttemptRow | null> {
   const result = await db.execute({
     sql: "SELECT * FROM attempts WHERE participant_id = ?",
     args: [participantId],
@@ -141,7 +144,10 @@ export async function finalizeAttempt(
     args: [attemptId],
   });
   for (const row of answerRows.rows) {
-    answers.set(String(row.question_id), row.selected_option == null ? null : String(row.selected_option));
+    answers.set(
+      String(row.question_id),
+      row.selected_option == null ? null : String(row.selected_option),
+    );
   }
 
   let correct = 0;
@@ -159,7 +165,8 @@ export async function finalizeAttempt(
   }
 
   const durationSec = s.durationMinutes * 60;
-  const submittedAt = reason === "time_up" ? Math.min(submittedAtSec, existing.ends_at) : submittedAtSec;
+  const submittedAt =
+    reason === "time_up" ? Math.min(submittedAtSec, existing.ends_at) : submittedAtSec;
   const scored = computeScore(
     { correct, wrong, unanswered },
     {
@@ -181,21 +188,29 @@ export async function finalizeAttempt(
               unanswered_count = ?,
               time_taken_seconds = ?
           WHERE id = ? AND status = 'in_progress'`,
-    args: [reason, submittedAt, scored.score, scored.correct, scored.wrong, scored.unanswered, taken, attemptId],
+    args: [
+      reason,
+      submittedAt,
+      scored.score,
+      scored.correct,
+      scored.wrong,
+      scored.unanswered,
+      taken,
+      attemptId,
+    ],
   });
 
   const fresh = await getAttemptById(db, attemptId);
-  return fresh ?? { ...existing, status: "submitted", submit_reason: reason, submitted_at: submittedAt };
+  return (
+    fresh ?? { ...existing, status: "submitted", submit_reason: reason, submitted_at: submittedAt }
+  );
 }
 
 /**
  * Finalizes every expired in-progress attempt (cron sweeper + admin list).
  * Returns how many attempts were finalized.
  */
-export async function finalizeExpiredAttempts(
-  db: Client,
-  now: number = nowSec(),
-): Promise<number> {
+export async function finalizeExpiredAttempts(db: Client, now: number = nowSec()): Promise<number> {
   const result = await db.execute({
     sql: "SELECT id FROM attempts WHERE status = 'in_progress' AND ends_at + ? < ?",
     args: [GRACE_SECONDS, now],
@@ -216,4 +231,3 @@ export async function hasAttemptInProgress(db: Client): Promise<boolean> {
   });
   return result.rows.length > 0;
 }
-

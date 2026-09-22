@@ -17,7 +17,12 @@ import {
   ensureNotExpired,
   parseQuestionOrder,
 } from "../attempt";
-import { requireParticipantClaims, signToken, participantSetCookie, PARTICIPANT_MAX_AGE } from "../auth";
+import {
+  requireParticipantClaims,
+  signToken,
+  participantSetCookie,
+  PARTICIPANT_MAX_AGE,
+} from "../auth";
 import { buildQuestionOrder } from "../shuffle";
 
 const schema = z.object({}).optional();
@@ -38,7 +43,11 @@ function uaOf(request: Request): string {
   return request.headers.get("user-agent") ?? "";
 }
 
-export async function handleExamStart(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleExamStart(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   await readJson(request, schema);
   const claims = await requireParticipantClaims(request, env);
   const now = nowSec();
@@ -71,12 +80,15 @@ export async function handleExamStart(request: Request, db: Client, env: ServerE
   const existing = await getAttemptByParticipant(db, claims.sub);
   const freshExisting = existing ? await ensureNotExpired(db, existing, now, settings) : null;
   if (freshExisting?.status === "submitted") {
-    throw new ApiError(409, "already_submitted", "This email has already been used to complete the exam.");
+    throw new ApiError(
+      409,
+      "already_submitted",
+      "This email has already been used to complete the exam.",
+    );
   }
 
-
   let attempt = freshExisting;
-  let resumed = attempt != null;
+  const resumed = attempt != null;
 
   if (attempt) {
     // Resume: rotate the session so the newest tab/device wins.
@@ -104,7 +116,16 @@ export async function handleExamStart(request: Request, db: Client, env: ServerE
   await db.execute({
     sql: `INSERT INTO attempts (id, participant_id, status, started_at, ends_at, question_order, session_id, violation_count, ip_address, user_agent)
           VALUES (?, ?, 'in_progress', ?, ?, ?, ?, 0, ?, ?)`,
-    args: [attemptId, claims.sub, startedAt, endsAt, JSON.stringify(order), sid, ipOf(request), uaOf(request)],
+    args: [
+      attemptId,
+      claims.sub,
+      startedAt,
+      endsAt,
+      JSON.stringify(order),
+      sid,
+      ipOf(request),
+      uaOf(request),
+    ],
   });
   attempt = await getAttemptById(db, attemptId);
   const token = await signToken(env.sessionSecret, { sub: claims.sub, sid }, PARTICIPANT_MAX_AGE);
@@ -152,7 +173,8 @@ async function respondWithExam(
     args: [attempt.id],
   });
   for (const row of answerRows.rows) {
-    answered[String(row.question_id)] = row.selected_option == null ? null : String(row.selected_option);
+    answered[String(row.question_id)] =
+      row.selected_option == null ? null : String(row.selected_option);
   }
 
   const now = nowSec();

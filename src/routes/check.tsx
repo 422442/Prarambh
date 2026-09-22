@@ -4,10 +4,7 @@ import { getSession, getAttempt, startOrResume } from "@/lib/quiz-store";
 
 export const Route = createFileRoute("/check")({
   head: () => ({
-    meta: [
-      { title: "Starting — Prarambh" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Starting — Prarambh" }, { name: "robots", content: "noindex" }],
   }),
   component: CheckPage,
 });

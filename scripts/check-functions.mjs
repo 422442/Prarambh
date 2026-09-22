@@ -32,13 +32,16 @@ for (const file of bundles) {
   const relativeImports = source.match(/(?:from|import\s*\()\s*["']\.\.?\//g);
   if (relativeImports) {
     failures += 1;
-    console.error(`FAIL ${rel}: ${relativeImports.length} relative import(s) — run "npm run build:api"`);
+    console.error(
+      `FAIL ${rel}: ${relativeImports.length} relative import(s) — run "npm run build:api"`,
+    );
     continue;
   }
   try {
     const mod = await import(pathToFileURL(file).href);
     const handler = mod.default ?? mod;
-    if (typeof handler !== "function") throw new Error(`default export is ${typeof handler}, expected function`);
+    if (typeof handler !== "function")
+      throw new Error(`default export is ${typeof handler}, expected function`);
     console.log(`OK   ${rel}`);
   } catch (err) {
     failures += 1;
@@ -64,7 +67,11 @@ if (fs.existsSync(canary)) {
     },
   };
   await handler(
-    { method: "GET", url: "/api/time", headers: { host: "localhost", "x-forwarded-proto": "https" } },
+    {
+      method: "GET",
+      url: "/api/time",
+      headers: { host: "localhost", "x-forwarded-proto": "https" },
+    },
     res,
   );
   if (res.status !== 200) {

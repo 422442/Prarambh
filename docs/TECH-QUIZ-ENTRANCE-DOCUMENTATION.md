@@ -12,22 +12,22 @@ A web-based entrance exam for a tech quiz. Participants register with a name and
 
 ### 1.1 Confirmed requirements
 
-| Area | Decision |
-|---|---|
-| Participant login | Name + Email (no OTP) |
-| Attempts | One attempt per email; resume allowed after refresh/disconnect |
-| Terms & Conditions | Must be accepted (all checkboxes) before the exam can start |
-| Duration | 45 minutes, countdown shown on screen, auto-submit at 00:00 |
-| Questions | 60 multiple-choice questions (4 options, one correct) |
-| Marking | +2 per correct answer, −0.5 per wrong answer, 0 for unanswered |
-| Maximum marks | 60 × 2 = **120** |
-| Violations | Auto-submit on the **3rd** violation |
-| Monitoring | Fullscreen lock, tab-switch detection, copy/paste/right-click block, periodic webcam snapshots, face detection alerts |
-| Result to participant | Only a "Submitted successfully" message (no score shown) |
-| Admin panel | Email + password login; view all participants, marks, time taken, monitoring evidence |
-| Question management | Admin panel add/edit + CSV upload |
-| Database | Turso |
-| Deployment | Vercel |
+| Area                  | Decision                                                                                                              |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Participant login     | Name + Email (no OTP)                                                                                                 |
+| Attempts              | One attempt per email; resume allowed after refresh/disconnect                                                        |
+| Terms & Conditions    | Must be accepted (all checkboxes) before the exam can start                                                           |
+| Duration              | 45 minutes, countdown shown on screen, auto-submit at 00:00                                                           |
+| Questions             | 60 multiple-choice questions (4 options, one correct)                                                                 |
+| Marking               | +2 per correct answer, −0.5 per wrong answer, 0 for unanswered                                                        |
+| Maximum marks         | 60 × 2 = **120**                                                                                                      |
+| Violations            | Auto-submit on the **3rd** violation                                                                                  |
+| Monitoring            | Fullscreen lock, tab-switch detection, copy/paste/right-click block, periodic webcam snapshots, face detection alerts |
+| Result to participant | Only a "Submitted successfully" message (no score shown)                                                              |
+| Admin panel           | Email + password login; view all participants, marks, time taken, monitoring evidence                                 |
+| Question management   | Admin panel add/edit + CSV upload                                                                                     |
+| Database              | Turso                                                                                                                 |
+| Deployment            | Vercel                                                                                                                |
 
 ### 1.2 Assumptions (change any of these if wrong)
 
@@ -100,17 +100,17 @@ Admin Login (email + password)
 
 ### 3.1 Recommended tech
 
-| Concern | Choice |
-|---|---|
-| Framework | Next.js (App Router) + TypeScript |
-| Styling | Tailwind CSS with Cohere design tokens |
-| DB client | `@libsql/client` (optionally Drizzle ORM for typed queries and migrations) |
-| Validation | `zod` |
-| Sessions | Signed HttpOnly cookies using `jose` (JWT) |
-| Password hashing | `bcryptjs` |
-| CSV parsing | `papaparse` |
-| Face detection | `@mediapipe/tasks-vision` (runs fully in the browser) |
-| Snapshot storage | `@vercel/blob` |
+| Concern          | Choice                                                                     |
+| ---------------- | -------------------------------------------------------------------------- |
+| Framework        | Next.js (App Router) + TypeScript                                          |
+| Styling          | Tailwind CSS with Cohere design tokens                                     |
+| DB client        | `@libsql/client` (optionally Drizzle ORM for typed queries and migrations) |
+| Validation       | `zod`                                                                      |
+| Sessions         | Signed HttpOnly cookies using `jose` (JWT)                                 |
+| Password hashing | `bcryptjs`                                                                 |
+| CSV parsing      | `papaparse`                                                                |
+| Face detection   | `@mediapipe/tasks-vision` (runs fully in the browser)                      |
+| Snapshot storage | `@vercel/blob`                                                             |
 
 ### 3.2 Core design principles
 
@@ -229,6 +229,7 @@ CREATE INDEX idx_snapshots_attempt ON snapshots(attempt_id);
 ```
 score = (correct_count × 2) − (wrong_count × 0.5)
 ```
+
 Unanswered contribute 0. Maximum possible score is 120.
 
 ---
@@ -250,8 +251,8 @@ Unanswered contribute 0. Maximum possible score is 120.
 - At `00:00` the client calls `POST /api/exam/submit` with reason `time_up`.
 - **Server enforcement:** the answer-save and submit endpoints accept requests only until `ends_at + 10s` (grace for network latency). After that, the attempt is finalized from the answers already saved.
 - **Safety nets (in this order):**
-  1. *Lazy finalization:* any request touching an attempt with `now > ends_at` and `status = in_progress` finalizes it. The admin participants list runs this check too.
-  2. *Cron sweeper:* a Vercel Cron job finalizes any expired in-progress attempts. On the Vercel Hobby plan cron frequency is limited, so lazy finalization is the primary mechanism and cron is a backup.
+  1. _Lazy finalization:_ any request touching an attempt with `now > ends_at` and `status = in_progress` finalizes it. The admin participants list runs this check too.
+  2. _Cron sweeper:_ a Vercel Cron job finalizes any expired in-progress attempts. On the Vercel Hobby plan cron frequency is limited, so lazy finalization is the primary mechanism and cron is a backup.
 
 ### 5.3 Resume behaviour
 
@@ -274,17 +275,17 @@ Because the clock is server-side, closing the browser does **not** pause the tim
 
 ### 6.1 Detection matrix
 
-| Signal | How it's detected | Counts as violation? |
-|---|---|---|
-| Tab switch | `document.visibilitychange` → hidden | Yes |
-| Window loses focus | `window.blur` (debounced, ignores camera prompts) | Yes |
-| Exit fullscreen | `fullscreenchange` | Yes |
-| No face in frame | MediaPipe Face Detector, ~1 check/second, no face for ≥ 5 s | Yes |
-| Multiple faces | Face count ≥ 2 sustained for ≥ 3 s | Yes |
-| Camera stopped/blocked | `MediaStreamTrack` `ended`/`mute` events | Yes |
-| Copy / paste / cut / right-click | Event blocked | No (blocked, logged only) |
-| Blocked shortcuts (F12, Ctrl+Shift+I, Ctrl+U, PrintScreen, etc.) | `keydown` intercepted | Logged only |
-| Page refresh / reload | `beforeunload` warning | No (resume is allowed) |
+| Signal                                                           | How it's detected                                           | Counts as violation?      |
+| ---------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------- |
+| Tab switch                                                       | `document.visibilitychange` → hidden                        | Yes                       |
+| Window loses focus                                               | `window.blur` (debounced, ignores camera prompts)           | Yes                       |
+| Exit fullscreen                                                  | `fullscreenchange`                                          | Yes                       |
+| No face in frame                                                 | MediaPipe Face Detector, ~1 check/second, no face for ≥ 5 s | Yes                       |
+| Multiple faces                                                   | Face count ≥ 2 sustained for ≥ 3 s                          | Yes                       |
+| Camera stopped/blocked                                           | `MediaStreamTrack` `ended`/`mute` events                    | Yes                       |
+| Copy / paste / cut / right-click                                 | Event blocked                                               | No (blocked, logged only) |
+| Blocked shortcuts (F12, Ctrl+Shift+I, Ctrl+U, PrintScreen, etc.) | `keydown` intercepted                                       | Logged only               |
+| Page refresh / reload                                            | `beforeunload` warning                                      | No (resume is allowed)    |
 
 ### 6.2 Violation rules
 
@@ -320,33 +321,33 @@ All routes are Next.js Route Handlers. Participant routes require the participan
 
 ### 7.1 Participant
 
-| Method | Route | Purpose |
-|---|---|---|
-| POST | `/api/auth/register` | Body `{ name, email }`. Creates/finds participant, sets session cookie |
-| POST | `/api/terms/accept` | Records terms version, timestamps, camera consent |
-| GET | `/api/exam/status` | Exam open?, attempt state, server time |
-| POST | `/api/exam/start` | Creates or resumes attempt; returns questions (**without** correct answers), `ends_at` |
-| POST | `/api/exam/answer` | Body `{ questionId, selectedOption \| null }`. Upserts an answer |
-| POST | `/api/exam/violation` | Body `{ type, meta }`. Logs it; returns `{ count, autoSubmitted }` |
-| POST | `/api/exam/snapshot` | Uploads a snapshot (image + face_count + kind) |
-| POST | `/api/exam/submit` | Body `{ reason }`. Idempotent finalization and scoring |
+| Method | Route                 | Purpose                                                                                |
+| ------ | --------------------- | -------------------------------------------------------------------------------------- |
+| POST   | `/api/auth/register`  | Body `{ name, email }`. Creates/finds participant, sets session cookie                 |
+| POST   | `/api/terms/accept`   | Records terms version, timestamps, camera consent                                      |
+| GET    | `/api/exam/status`    | Exam open?, attempt state, server time                                                 |
+| POST   | `/api/exam/start`     | Creates or resumes attempt; returns questions (**without** correct answers), `ends_at` |
+| POST   | `/api/exam/answer`    | Body `{ questionId, selectedOption \| null }`. Upserts an answer                       |
+| POST   | `/api/exam/violation` | Body `{ type, meta }`. Logs it; returns `{ count, autoSubmitted }`                     |
+| POST   | `/api/exam/snapshot`  | Uploads a snapshot (image + face_count + kind)                                         |
+| POST   | `/api/exam/submit`    | Body `{ reason }`. Idempotent finalization and scoring                                 |
 
 ### 7.2 Admin
 
-| Method | Route | Purpose |
-|---|---|---|
-| POST | `/api/admin/login` | Email + password, sets admin cookie |
-| POST | `/api/admin/logout` | Clears cookie |
-| GET | `/api/admin/stats` | Dashboard numbers |
-| GET | `/api/admin/participants` | Paginated, searchable, sortable list |
-| GET | `/api/admin/participants/:id` | Detail: answers, violations, snapshots |
-| GET | `/api/admin/export` | CSV export of results |
-| POST | `/api/admin/participants/:id/reset` | Delete attempt so they can retake (audit-logged) |
-| GET/POST | `/api/admin/questions` | List / create |
-| PUT/DELETE | `/api/admin/questions/:id` | Edit / delete |
-| POST | `/api/admin/questions/import` | CSV upload (validate, preview, then commit) |
-| PUT | `/api/admin/settings` | Open/close exam, retention, etc. |
-| GET | `/api/cron/finalize` | Cron sweeper (protected by `CRON_SECRET`) |
+| Method     | Route                               | Purpose                                          |
+| ---------- | ----------------------------------- | ------------------------------------------------ |
+| POST       | `/api/admin/login`                  | Email + password, sets admin cookie              |
+| POST       | `/api/admin/logout`                 | Clears cookie                                    |
+| GET        | `/api/admin/stats`                  | Dashboard numbers                                |
+| GET        | `/api/admin/participants`           | Paginated, searchable, sortable list             |
+| GET        | `/api/admin/participants/:id`       | Detail: answers, violations, snapshots           |
+| GET        | `/api/admin/export`                 | CSV export of results                            |
+| POST       | `/api/admin/participants/:id/reset` | Delete attempt so they can retake (audit-logged) |
+| GET/POST   | `/api/admin/questions`              | List / create                                    |
+| PUT/DELETE | `/api/admin/questions/:id`          | Edit / delete                                    |
+| POST       | `/api/admin/questions/import`       | CSV upload (validate, preview, then commit)      |
+| PUT        | `/api/admin/settings`               | Open/close exam, retention, etc.                 |
+| GET        | `/api/cron/finalize`                | Cron sweeper (protected by `CRON_SECRET`)        |
 
 ### 7.3 Question CSV format
 
@@ -356,6 +357,7 @@ question,option_a,option_b,option_c,option_d,correct
 ```
 
 Import rules:
+
 - Header row required; `correct` must be `A`, `B`, `C` or `D`.
 - The upload shows a **preview** with per-row validation errors before anything is saved.
 - Options: **Append** or **Replace all**. Replace is blocked once any attempt exists.
@@ -365,17 +367,17 @@ Import rules:
 
 ## 8. Security
 
-| Risk | Mitigation |
-|---|---|
-| Answer key leakage | `correct_option` never leaves the server; scoring is server-side |
-| Clock tampering | Server-authoritative `ends_at` |
-| Admin brute force | Rate limiting on `/api/admin/login`; bcrypt hashes; generic error messages |
-| Session theft | HttpOnly, Secure, SameSite=Lax cookies; short-lived JWTs |
-| SQL injection | Parameterised queries only (libSQL/Drizzle) |
-| Admin routes exposed | Middleware protects `/admin/*` and `/api/admin/*` |
-| Duplicate submission | Idempotent submit; unique constraint on `participant_id` in `attempts` |
-| Snapshot privacy | Consent captured in terms; access only via admin; retention auto-delete |
-| Email impersonation | **Known limitation:** without OTP, someone who knows another person's email could resume that attempt. Mitigations: single active session, IP/user-agent logged and shown to admin, admin can reset. An OTP step can be added later without changing the schema |
+| Risk                 | Mitigation                                                                                                                                                                                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Answer key leakage   | `correct_option` never leaves the server; scoring is server-side                                                                                                                                                                                                |
+| Clock tampering      | Server-authoritative `ends_at`                                                                                                                                                                                                                                  |
+| Admin brute force    | Rate limiting on `/api/admin/login`; bcrypt hashes; generic error messages                                                                                                                                                                                      |
+| Session theft        | HttpOnly, Secure, SameSite=Lax cookies; short-lived JWTs                                                                                                                                                                                                        |
+| SQL injection        | Parameterised queries only (libSQL/Drizzle)                                                                                                                                                                                                                     |
+| Admin routes exposed | Middleware protects `/admin/*` and `/api/admin/*`                                                                                                                                                                                                               |
+| Duplicate submission | Idempotent submit; unique constraint on `participant_id` in `attempts`                                                                                                                                                                                          |
+| Snapshot privacy     | Consent captured in terms; access only via admin; retention auto-delete                                                                                                                                                                                         |
+| Email impersonation  | **Known limitation:** without OTP, someone who knows another person's email could resume that attempt. Mitigations: single active session, IP/user-agent logged and shown to admin, admin can reset. An OTP step can be added later without changing the schema |
 
 ---
 
@@ -383,23 +385,24 @@ Import rules:
 
 ### 9.1 Design tokens used
 
-| Token | Value | Used for |
-|---|---|---|
-| `canvas` | `#ffffff` | Default page background |
-| `primary` | `#17171c` | Primary pill buttons, dark cards |
-| `ink` | `#212121` | Body text |
-| `deep-green` | `#003c33` | Exam header bar and dark feature bands |
-| `soft-stone` | `#eeece7` | Stat cards, question palette background |
-| `pale-green` | `#edfce9` | "Answered" state, success surfaces |
-| `hairline` | `#d9d9dd` | Table rules, input borders |
-| `muted` / `slate` | `#93939f` / `#75758a` | Metadata, timestamps |
-| `coral` | `#ff7759` | Small warm accents only: timer under 5 min, violation warnings, "flagged" chips |
-| `action-blue` | `#1863dc` | Links, pagination |
-| `form-focus` | `#9b60aa` | Text input focus border |
-| `focus-blue` | `#4c6ee6` | Keyboard focus ring |
-| `error` | `#b30000` | Validation errors |
+| Token             | Value                 | Used for                                                                        |
+| ----------------- | --------------------- | ------------------------------------------------------------------------------- |
+| `canvas`          | `#ffffff`             | Default page background                                                         |
+| `primary`         | `#17171c`             | Primary pill buttons, dark cards                                                |
+| `ink`             | `#212121`             | Body text                                                                       |
+| `deep-green`      | `#003c33`             | Exam header bar and dark feature bands                                          |
+| `soft-stone`      | `#eeece7`             | Stat cards, question palette background                                         |
+| `pale-green`      | `#edfce9`             | "Answered" state, success surfaces                                              |
+| `hairline`        | `#d9d9dd`             | Table rules, input borders                                                      |
+| `muted` / `slate` | `#93939f` / `#75758a` | Metadata, timestamps                                                            |
+| `coral`           | `#ff7759`             | Small warm accents only: timer under 5 min, violation warnings, "flagged" chips |
+| `action-blue`     | `#1863dc`             | Links, pagination                                                               |
+| `form-focus`      | `#9b60aa`             | Text input focus border                                                         |
+| `focus-blue`      | `#4c6ee6`             | Keyboard focus ring                                                             |
+| `error`           | `#b30000`             | Validation errors                                                               |
 
 **Typography** (Cohere fonts are proprietary and not bundled, so the documented fallbacks apply):
+
 - Display: `Space Grotesk` (fallback `Inter`), weight 400, tight line-height and negative tracking.
 - UI/Body: `Inter` (fallback Arial / system-ui).
 - Technical labels and the **timer**: monospace with uppercase 14px labels (`mono-label` role).
@@ -410,25 +413,25 @@ Import rules:
 
 **Participant**
 
-| Screen | Layout |
-|---|---|
-| **Login** | Centered display headline ("Tech Quiz Entrance") on white; a `contact-form-card` (22px radius, 1px hairline) with Name and Email fields; near-black pill "Continue" button. Announcement bar (black, 36px) above the nav shows exam date/instructions |
-| **Terms & Conditions** | Rule-separated list of terms (research-table style), one checkbox per group, a camera-consent checkbox, "Start system check" pill disabled until all are ticked |
-| **System check** | Camera preview in a 22px rounded card, status rows with checkmarks (camera, face detected, fullscreen supported), primary pill "Start exam" |
-| **Exam** | Deep-green top bar (`#003c33`) with the mono timer on the right and violation counter; main white question card; right-side palette grid (60 numbered squares: pale-green = answered, hairline outline = unanswered, coral outline = marked for review, black fill = current). Mobile: palette collapses into a drawer |
-| **Submitted** | Minimal centered message "Submitted successfully" with a secondary text link. No score is displayed |
-| **Blocked / closed** | Friendly messages for "exam not open", "already submitted", "use desktop" |
+| Screen                 | Layout                                                                                                                                                                                                                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Login**              | Centered display headline ("Tech Quiz Entrance") on white; a `contact-form-card` (22px radius, 1px hairline) with Name and Email fields; near-black pill "Continue" button. Announcement bar (black, 36px) above the nav shows exam date/instructions                                                                  |
+| **Terms & Conditions** | Rule-separated list of terms (research-table style), one checkbox per group, a camera-consent checkbox, "Start system check" pill disabled until all are ticked                                                                                                                                                        |
+| **System check**       | Camera preview in a 22px rounded card, status rows with checkmarks (camera, face detected, fullscreen supported), primary pill "Start exam"                                                                                                                                                                            |
+| **Exam**               | Deep-green top bar (`#003c33`) with the mono timer on the right and violation counter; main white question card; right-side palette grid (60 numbered squares: pale-green = answered, hairline outline = unanswered, coral outline = marked for review, black fill = current). Mobile: palette collapses into a drawer |
+| **Submitted**          | Minimal centered message "Submitted successfully" with a secondary text link. No score is displayed                                                                                                                                                                                                                    |
+| **Blocked / closed**   | Friendly messages for "exam not open", "already submitted", "use desktop"                                                                                                                                                                                                                                              |
 
 **Admin**
 
-| Screen | Layout |
-|---|---|
-| **Admin login** | Same card style as participant login, on `soft-stone` background |
-| **Dashboard** | Row of `soft-stone` stat cards: registered, in progress, submitted, average score, average time, flagged count |
-| **Participants** | Full-width `research-table`: Rank, Name, Email, Status, Score /120, Correct, Wrong, Unanswered, Time taken (mm:ss), Violations, Submitted at. Search field, outline-pill filters (Status, Flagged), sortable columns, pagination, "Export CSV" |
-| **Participant detail** | Summary header, per-question answer review (chosen vs correct), violation timeline, snapshot gallery in rounded 8px thumbnails with lightbox, "Reset attempt" in a danger area |
-| **Questions** | Table with an "x / 60 active" indicator, add/edit modal, CSV upload with preview step |
-| **Settings** | Open/close exam toggle, snapshot retention, danger zone |
+| Screen                 | Layout                                                                                                                                                                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Admin login**        | Same card style as participant login, on `soft-stone` background                                                                                                                                                                               |
+| **Dashboard**          | Row of `soft-stone` stat cards: registered, in progress, submitted, average score, average time, flagged count                                                                                                                                 |
+| **Participants**       | Full-width `research-table`: Rank, Name, Email, Status, Score /120, Correct, Wrong, Unanswered, Time taken (mm:ss), Violations, Submitted at. Search field, outline-pill filters (Status, Flagged), sortable columns, pagination, "Export CSV" |
+| **Participant detail** | Summary header, per-question answer review (chosen vs correct), violation timeline, snapshot gallery in rounded 8px thumbnails with lightbox, "Reset attempt" in a danger area                                                                 |
+| **Questions**          | Table with an "x / 60 active" indicator, add/edit modal, CSV upload with preview step                                                                                                                                                          |
+| **Settings**           | Open/close exam toggle, snapshot retention, danger zone                                                                                                                                                                                        |
 
 ### 9.3 Responsiveness
 
@@ -476,15 +479,15 @@ middleware.ts                 # protects /admin and /api/admin
 
 ## 11. Environment Variables
 
-| Variable | Purpose |
-|---|---|
-| `TURSO_DATABASE_URL` | Turso database URL (`libsql://...`) |
-| `TURSO_AUTH_TOKEN` | Turso auth token |
-| `SESSION_SECRET` | Random 32+ byte string for signing cookies |
-| `ADMIN_EMAIL` | Seed admin email |
-| `ADMIN_PASSWORD` | Seed admin password (hashed on first seed; remove afterwards) |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob access |
-| `CRON_SECRET` | Protects the cron endpoint |
+| Variable                | Purpose                                                       |
+| ----------------------- | ------------------------------------------------------------- |
+| `TURSO_DATABASE_URL`    | Turso database URL (`libsql://...`)                           |
+| `TURSO_AUTH_TOKEN`      | Turso auth token                                              |
+| `SESSION_SECRET`        | Random 32+ byte string for signing cookies                    |
+| `ADMIN_EMAIL`           | Seed admin email                                              |
+| `ADMIN_PASSWORD`        | Seed admin password (hashed on first seed; remove afterwards) |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob access                                            |
+| `CRON_SECRET`           | Protects the cron endpoint                                    |
 
 ---
 
@@ -514,19 +517,19 @@ middleware.ts                 # protects /admin and /api/admin
 
 ## 13. Edge Cases
 
-| Situation | Behaviour |
-|---|---|
-| Same email registers twice | Returns the existing participant; resumes or shows "already submitted" |
-| Name differs on second login | Original name kept; admin sees a mismatch note |
-| Browser closed mid-exam | Timer keeps running; resume on return with saved answers |
-| Internet drops | Client queues answer saves and retries; a banner shows "reconnecting". The server finalizes at `ends_at` regardless |
-| Timer hits 0 while offline | The server auto-finalizes via lazy finalization or cron using saved answers |
-| Two tabs open | Newest session wins; the older tab is logged out and gets a message |
-| Camera permission revoked | Counts as a violation; the participant is asked to re-enable |
-| Fewer than 60 active questions | Exam cannot be opened; the admin sees a warning |
-| Admin edits questions during a live exam | Blocked while any attempt is `in_progress` |
-| Participant submits early | Confirmation dialog, then instant submit |
-| Device clock is changed | No effect; the server clock is used |
+| Situation                                | Behaviour                                                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Same email registers twice               | Returns the existing participant; resumes or shows "already submitted"                                              |
+| Name differs on second login             | Original name kept; admin sees a mismatch note                                                                      |
+| Browser closed mid-exam                  | Timer keeps running; resume on return with saved answers                                                            |
+| Internet drops                           | Client queues answer saves and retries; a banner shows "reconnecting". The server finalizes at `ends_at` regardless |
+| Timer hits 0 while offline               | The server auto-finalizes via lazy finalization or cron using saved answers                                         |
+| Two tabs open                            | Newest session wins; the older tab is logged out and gets a message                                                 |
+| Camera permission revoked                | Counts as a violation; the participant is asked to re-enable                                                        |
+| Fewer than 60 active questions           | Exam cannot be opened; the admin sees a warning                                                                     |
+| Admin edits questions during a live exam | Blocked while any attempt is `in_progress`                                                                          |
+| Participant submits early                | Confirmation dialog, then instant submit                                                                            |
+| Device clock is changed                  | No effect; the server clock is used                                                                                 |
 
 ---
 
@@ -546,15 +549,15 @@ middleware.ts                 # protects /admin and /api/admin
 
 ## 15. Implementation Roadmap
 
-| Phase | Deliverables |
-|---|---|
-| **1. Foundation** | Next.js project, Tailwind + Cohere tokens, Turso connection, schema, seed script |
-| **2. Participant core** | Login, terms, session, start/resume, question UI, autosave, timer, submit and scoring |
-| **3. Admin core** | Admin login, questions CRUD + CSV import, participants table, CSV export, dashboard |
-| **4. Monitoring** | Fullscreen/visibility/blur detection, violation logging, 3-strike auto-submit, system check |
-| **5. Webcam** | MediaPipe face detection, snapshot capture/upload to Blob, admin gallery |
-| **6. Hardening** | Rate limiting, cron sweeper, retention cleanup, edge cases, accessibility, load test |
-| **7. Launch** | Production deploy, dry run with test participants, backup |
+| Phase                   | Deliverables                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| **1. Foundation**       | Next.js project, Tailwind + Cohere tokens, Turso connection, schema, seed script            |
+| **2. Participant core** | Login, terms, session, start/resume, question UI, autosave, timer, submit and scoring       |
+| **3. Admin core**       | Admin login, questions CRUD + CSV import, participants table, CSV export, dashboard         |
+| **4. Monitoring**       | Fullscreen/visibility/blur detection, violation logging, 3-strike auto-submit, system check |
+| **5. Webcam**           | MediaPipe face detection, snapshot capture/upload to Blob, admin gallery                    |
+| **6. Hardening**        | Rate limiting, cron sweeper, retention cleanup, edge cases, accessibility, load test        |
+| **7. Launch**           | Production deploy, dry run with test participants, backup                                   |
 
 ---
 
@@ -589,7 +592,7 @@ middleware.ts                 # protects /admin and /api/admin
 
 ## Appendix B: Sample Result Row (admin view)
 
-| Rank | Name | Email | Score /120 | Correct | Wrong | Unanswered | Time taken | Violations | Reason |
-|---:|---|---|---:|---:|---:|---:|---|---:|---|
-| 1 | A. Sharma | a@example.com | 72.5 | 40 | 15 | 5 | 38:12 | 0 | manual |
-| 2 | R. Singh | r@example.com | 72.5 | 40 | 15 | 5 | 43:50 | 1 | time_up |
+| Rank | Name      | Email         | Score /120 | Correct | Wrong | Unanswered | Time taken | Violations | Reason  |
+| ---: | --------- | ------------- | ---------: | ------: | ----: | ---------: | ---------- | ---------: | ------- |
+|    1 | A. Sharma | a@example.com |       72.5 |      40 |    15 |          5 | 38:12      |          0 | manual  |
+|    2 | R. Singh  | r@example.com |       72.5 |      40 |    15 |          5 | 43:50      |          1 | time_up |

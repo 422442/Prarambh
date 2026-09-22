@@ -23,9 +23,9 @@ Login with your Turso account.
 Copy and paste this entire SQL statement into the console:
 
 ```sql
-INSERT INTO admins (id, email, password_hash, created_at) 
+INSERT INTO admins (id, email, password_hash, created_at)
 VALUES (
-  'admin-1790007694803', 
+  'admin-1790007694803',
   'devnest.techclub@gmail.com',
   '$2b$10$Wue8cXXn3Tgyxq8Gch1iNO96rt1C70FqwXmnD1HBA3FUatH0.4vsS',
   1790007694
@@ -46,6 +46,7 @@ SELECT id, email, created_at FROM admins;
 ```
 
 You should see:
+
 ```
 id                  | email                         | created_at
 --------------------|-------------------------------|------------
@@ -57,6 +58,7 @@ admin-1790007694803 | devnest.techclub@gmail.com    | 1790007694
 Go to: **https://prarambh.devnest-two.vercel.app/admin/login**
 
 Login with:
+
 - **Email**: `devnest.techclub@gmail.com`
 - **Password**: `CTOPrarambh2026`
 
@@ -65,7 +67,7 @@ Login with:
 If the admin already exists, you need to update the password instead:
 
 ```sql
-UPDATE admins 
+UPDATE admins
 SET password_hash = '$2b$10$Wue8cXXn3Tgyxq8Gch1iNO96rt1C70FqwXmnD1HBA3FUatH0.4vsS'
 WHERE email = 'devnest.techclub@gmail.com';
 ```
@@ -82,6 +84,7 @@ If Turso doesn't have a SQL Console in the UI, they might have a web-based shell
 ## Screenshots Reference
 
 The Turso dashboard typically looks like:
+
 - Left sidebar: List of databases
 - Main area: Database details, tabs, and actions
 - SQL console/shell: Usually under "Query" or "Console" tab
@@ -91,6 +94,7 @@ The Turso dashboard typically looks like:
 ### Can't Find SQL Console?
 
 Try these alternatives:
+
 1. Look for "Query Editor", "SQL Editor", "Console", or "Shell" tabs
 2. Check the database settings/actions menu for SQL options
 3. Use the Turso CLI (see ADMIN_SETUP.md)
@@ -98,15 +102,18 @@ Try these alternatives:
 ### Query Failed?
 
 **Error: "table admins has no column named..."**
+
 - The database might not be migrated. Run migrations first:
   ```bash
   npm run db:migrate
   ```
 
 **Error: "UNIQUE constraint failed"**
+
 - Admin already exists. Use the UPDATE query instead (see above)
 
 **Error: "no such table: admins"**
+
 - Database not initialized. Run migrations:
   ```bash
   npm run db:migrate

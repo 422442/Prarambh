@@ -4,9 +4,17 @@ export const Route = createFileRoute("/blocked")({
   head: () => ({
     meta: [
       { title: "Desktop Required — Prarambh" },
-      { name: "description", content: "The Prarambh entrance exam requires a laptop or desktop computer. Mobile devices and tablets are not supported." },
+      {
+        name: "description",
+        content:
+          "The Prarambh entrance exam requires a laptop or desktop computer. Mobile devices and tablets are not supported.",
+      },
       { property: "og:title", content: "Desktop Required — Prarambh" },
-      { property: "og:description", content: "The Prarambh entrance exam requires a laptop or desktop computer. Mobile devices and tablets are not supported." },
+      {
+        property: "og:description",
+        content:
+          "The Prarambh entrance exam requires a laptop or desktop computer. Mobile devices and tablets are not supported.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -37,19 +45,24 @@ function BlockedPage() {
 
         {/* Title */}
         <h1 className="text-3xl font-bold text-foreground">Desktop Required</h1>
-        
+
         {/* Description */}
         <p className="mt-4 text-base text-slate leading-relaxed">
-          The Prarambh entrance exam requires a <strong className="text-foreground">laptop or desktop computer</strong> with a stable internet connection.
+          The Prarambh entrance exam requires a{" "}
+          <strong className="text-foreground">laptop or desktop computer</strong> with a stable
+          internet connection.
         </p>
-        
+
         <p className="mt-3 text-sm text-slate">
-          Mobile devices and tablets are not supported to ensure exam integrity and the best testing experience.
+          Mobile devices and tablets are not supported to ensure exam integrity and the best testing
+          experience.
         </p>
 
         {/* Instructions */}
         <div className="mt-8 rounded-xl border border-border bg-card/50 p-6 text-left">
-          <h2 className="font-semibold text-foreground mb-3">Please switch to a desktop computer:</h2>
+          <h2 className="font-semibold text-foreground mb-3">
+            Please switch to a desktop computer:
+          </h2>
           <ul className="space-y-2 text-sm text-slate">
             <li className="flex items-start gap-2">
               <span className="text-deep-green mt-0.5">✓</span>
@@ -71,9 +84,7 @@ function BlockedPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-6 text-xs text-slate">
-          Need help? Contact the exam coordinator.
-        </p>
+        <p className="mt-6 text-xs text-slate">Need help? Contact the exam coordinator.</p>
       </div>
     </div>
   );

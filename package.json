@@ -17,7 +17,8 @@
     "test:watch": "vitest",
     "db:migrate": "node --experimental-strip-types scripts/db-migrate.ts",
     "db:seed": "node --experimental-strip-types scripts/db-seed.ts",
-    "db:seed-questions": "node --experimental-strip-types scripts/seed-questions.ts"
+    "db:seed-questions": "node --experimental-strip-types scripts/seed-questions.ts",
+    "db:check": "node --experimental-strip-types scripts/check-db.ts"
   },
   "engines": {
     "node": "24.x"

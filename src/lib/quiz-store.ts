@@ -174,7 +174,10 @@ export function toggleMarked(email: string, questionId: string) {
   saveAttempt(attempt);
 }
 
-export function recordViolation(email: string, type: string): { count: number; autoSubmitted: boolean } {
+export function recordViolation(
+  email: string,
+  type: string,
+): { count: number; autoSubmitted: boolean } {
   const attempt = getAttempt(email);
   if (!attempt || attempt.status === "submitted") return { count: 0, autoSubmitted: false };
   const now = Date.now();
@@ -215,7 +218,10 @@ export function finalize(email: string, reason: Attempt["submitReason"]): Attemp
   attempt.wrongCount = wrong;
   attempt.unansweredCount = unanswered;
   attempt.score = correct * EXAM_CONFIG.marksCorrect + wrong * EXAM_CONFIG.marksWrong;
-  attempt.timeTakenSeconds = Math.max(0, Math.round((attempt.submittedAt - attempt.startedAt) / 1000));
+  attempt.timeTakenSeconds = Math.max(
+    0,
+    Math.round((attempt.submittedAt - attempt.startedAt) / 1000),
+  );
   saveAttempt(attempt);
   return attempt;
 }

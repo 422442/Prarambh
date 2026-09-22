@@ -34,9 +34,7 @@ const DEFAULT_SETTINGS: Array<[string, string]> = [
 
 async function main() {
   const authToken = url!.startsWith("file:") ? undefined : process.env["TURSO_AUTH_TOKEN"];
-  const db = url!.startsWith("file:")
-    ? createClient({ url: url! })
-    : createClient({ url: url!, authToken });
+  const db = authToken ? createClient({ url: url!, authToken }) : createClient({ url: url! });
 
   for (const [key, value] of DEFAULT_SETTINGS) {
     await db.execute({

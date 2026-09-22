@@ -7,9 +7,15 @@ export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
       { title: "Terms & Conditions — Prarambh" },
-      { name: "description", content: "Exam rules, marking scheme and consent for the Prarambh entrance exam." },
+      {
+        name: "description",
+        content: "Exam rules, marking scheme and consent for the Prarambh entrance exam.",
+      },
       { property: "og:title", content: "Terms & Conditions — Prarambh" },
-      { property: "og:description", content: "Exam rules, marking scheme and consent for the Prarambh entrance exam." },
+      {
+        property: "og:description",
+        content: "Exam rules, marking scheme and consent for the Prarambh entrance exam.",
+      },
     ],
   }),
   component: TermsPage,

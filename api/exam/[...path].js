@@ -186,7 +186,14 @@ async function sendWebResponse(web, res) {
     if (name.toLowerCase() === "set-cookie") return;
     res.setHeader(name, value);
   });
-  const cookies = web.headers.getSetCookie?.() ?? [];
+  let cookies = [];
+  if (typeof web.headers.getSetCookie === "function") {
+    cookies = web.headers.getSetCookie();
+  }
+  if (cookies.length === 0) {
+    const rawCookie = web.headers.get("set-cookie");
+    if (rawCookie) cookies = [rawCookie];
+  }
   if (cookies.length > 0) res.setHeader("set-cookie", cookies);
   const buffer = await web.arrayBuffer();
   if (buffer.byteLength > 0) {
@@ -337,7 +344,10 @@ async function finalizeAttempt(db, attemptId, reason, submittedAtSec = nowSec(),
     args: [attemptId]
   });
   for (const row of answerRows.rows) {
-    answers.set(String(row.question_id), row.selected_option == null ? null : String(row.selected_option));
+    answers.set(
+      String(row.question_id),
+      row.selected_option == null ? null : String(row.selected_option)
+    );
   }
   let correct = 0;
   let wrong = 0;
@@ -374,7 +384,16 @@ async function finalizeAttempt(db, attemptId, reason, submittedAtSec = nowSec(),
               unanswered_count = ?,
               time_taken_seconds = ?
           WHERE id = ? AND status = 'in_progress'`,
-    args: [reason, submittedAt, scored.score, scored.correct, scored.wrong, scored.unanswered, taken, attemptId]
+    args: [
+      reason,
+      submittedAt,
+      scored.score,
+      scored.correct,
+      scored.wrong,
+      scored.unanswered,
+      taken,
+      attemptId
+    ]
   });
   const fresh = await getAttemptById(db, attemptId);
   return fresh ?? { ...existing, status: "submitted", submit_reason: reason, submitted_at: submittedAt };
@@ -497,10 +516,14 @@ async function handleExamStart(request, db, env) {
   const existing = await getAttemptByParticipant(db, claims.sub);
   const freshExisting = existing ? await ensureNotExpired(db, existing, now, settings) : null;
   if (freshExisting?.status === "submitted") {
-    throw new ApiError(409, "already_submitted", "This email has already been used to complete the exam.");
+    throw new ApiError(
+      409,
+      "already_submitted",
+      "This email has already been used to complete the exam."
+    );
   }
   let attempt = freshExisting;
-  let resumed = attempt != null;
+  const resumed = attempt != null;
   if (attempt) {
     const sid2 = nanoid();
     await db.execute({
@@ -524,7 +547,16 @@ async function handleExamStart(request, db, env) {
   await db.execute({
     sql: `INSERT INTO attempts (id, participant_id, status, started_at, ends_at, question_order, session_id, violation_count, ip_address, user_agent)
           VALUES (?, ?, 'in_progress', ?, ?, ?, ?, 0, ?, ?)`,
-    args: [attemptId, claims.sub, startedAt, endsAt, JSON.stringify(order), sid, ipOf(request), uaOf(request)]
+    args: [
+      attemptId,
+      claims.sub,
+      startedAt,
+      endsAt,
+      JSON.stringify(order),
+      sid,
+      ipOf(request),
+      uaOf(request)
+    ]
   });
   attempt = await getAttemptById(db, attemptId);
   const token = await signToken(env.sessionSecret, { sub: claims.sub, sid }, PARTICIPANT_MAX_AGE);
@@ -712,7 +744,13 @@ async function handleExamSubmit(request, db, env) {
   let reason = body.reason ?? "manual";
   if (now > attempt.ends_at + GRACE_SECONDS) {
     reason = "time_up";
-    const finalized2 = await finalizeAttempt(db, attempt.id, reason, Math.max(now, attempt.ends_at), settings);
+    const finalized2 = await finalizeAttempt(
+      db,
+      attempt.id,
+      reason,
+      Math.max(now, attempt.ends_at),
+      settings
+    );
     return json({ status: "submitted", submitReason: finalized2.submit_reason });
   }
   const finalized = await finalizeAttempt(db, attempt.id, reason, now, settings);
@@ -757,7 +795,14 @@ async function handleExamSnapshot(request, db, env) {
   });
   await db.execute({
     sql: "INSERT INTO snapshots (id, attempt_id, blob_url, kind, face_count, taken_at) VALUES (?, ?, ?, ?, ?, ?)",
-    args: [crypto.randomUUID(), attempt.id, blob.url, body.kind, body.faceCount, Math.floor(Date.now() / 1e3)]
+    args: [
+      crypto.randomUUID(),
+      attempt.id,
+      blob.url,
+      body.kind,
+      body.faceCount,
+      Math.floor(Date.now() / 1e3)
+    ]
   });
   return json({ ok: true, stored: true });
 }

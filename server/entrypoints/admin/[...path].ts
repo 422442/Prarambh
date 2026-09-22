@@ -9,10 +9,7 @@ import { handleAdminResetAll } from "../../routes/admin-reset-all";
 import { handleAdminParticipants } from "../../routes/admin-participants";
 import { handleAdminParticipantDetail } from "../../routes/admin-participant-detail";
 import { handleAdminReset } from "../../routes/admin-reset";
-import {
-  handleAdminQuestionsList,
-  handleAdminQuestionCreate,
-} from "../../routes/admin-questions";
+import { handleAdminQuestionsList, handleAdminQuestionCreate } from "../../routes/admin-questions";
 import { handleAdminQuestionsImport } from "../../routes/admin-questions-import";
 import {
   handleAdminQuestionUpdate,
@@ -25,6 +22,10 @@ function parsePath(url: string): string[] {
 }
 
 export default adapter(async (request) => {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204 });
+  }
+
   const { env, db } = await makeContext();
   const parts = parsePath(request.url);
   const sub = parts[0] ?? "";

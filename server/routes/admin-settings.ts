@@ -14,7 +14,11 @@ const schema = z.object({
   clampScoreAtZero: z.boolean().optional(),
 });
 
-export async function handleAdminSettingsUpdate(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleAdminSettingsUpdate(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   await requireAdmin(request, env);
   const body = await readJson(request, schema);
 
@@ -22,7 +26,8 @@ export async function handleAdminSettingsUpdate(request: Request, db: Client, en
   if (body.examOpen !== undefined) updates.push(["exam_open", body.examOpen ? "1" : "0"]);
   if (body.snapshotRetentionDays !== undefined)
     updates.push(["snapshot_retention_days", String(body.snapshotRetentionDays)]);
-  if (body.clampScoreAtZero !== undefined) updates.push(["clamp_score_at_zero", body.clampScoreAtZero ? "1" : "0"]);
+  if (body.clampScoreAtZero !== undefined)
+    updates.push(["clamp_score_at_zero", body.clampScoreAtZero ? "1" : "0"]);
 
   for (const [key, value] of updates) {
     await db.execute({

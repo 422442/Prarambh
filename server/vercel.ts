@@ -28,7 +28,10 @@ export interface VercelLikeResponse {
 }
 
 export function buildRequestUrl(req: VercelLikeRequest): string {
-  const proto = String(req.headers["x-forwarded-proto"] ?? "https").split(",")[0]?.trim() || "https";
+  const proto =
+    String(req.headers["x-forwarded-proto"] ?? "https")
+      .split(",")[0]
+      ?.trim() || "https";
   const host = String(req.headers["x-forwarded-host"] ?? req.headers.host ?? "localhost");
   const pathAndQuery = req.url && req.url.startsWith("/") ? req.url : "/";
   return `${proto}://${host}${pathAndQuery}`;
@@ -68,7 +71,14 @@ export async function sendWebResponse(web: Response, res: VercelLikeResponse): P
     if (name.toLowerCase() === "set-cookie") return; // handled below (multiple values)
     res.setHeader(name, value);
   });
-  const cookies = web.headers.getSetCookie?.() ?? [];
+  let cookies: string[] = [];
+  if (typeof web.headers.getSetCookie === "function") {
+    cookies = web.headers.getSetCookie();
+  }
+  if (cookies.length === 0) {
+    const rawCookie = web.headers.get("set-cookie");
+    if (rawCookie) cookies = [rawCookie];
+  }
   if (cookies.length > 0) res.setHeader("set-cookie", cookies);
   const buffer = await web.arrayBuffer();
   if (buffer.byteLength > 0) {
@@ -81,7 +91,8 @@ export async function sendWebResponse(web: Response, res: VercelLikeResponse): P
 export function clientIp(req: VercelLikeRequest): string {
   const forwarded = req.headers["x-forwarded-for"];
   if (typeof forwarded === "string") return forwarded.split(",")[0]?.trim() || "unknown";
-  if (Array.isArray(forwarded) && forwarded[0]) return String(forwarded[0]).split(",")[0]?.trim() || "unknown";
+  if (Array.isArray(forwarded) && forwarded[0])
+    return String(forwarded[0]).split(",")[0]?.trim() || "unknown";
   return req.socket?.remoteAddress ?? "unknown";
 }
 

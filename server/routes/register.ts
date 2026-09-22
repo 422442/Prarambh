@@ -26,7 +26,11 @@ export type RegisterResult = {
   serverTime: number;
 };
 
-export async function handleRegister(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleRegister(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   const body = await readJson(request, schema);
   const now = nowSec();
   const settings = await getSettings(db);
@@ -76,7 +80,11 @@ export async function handleRegister(request: Request, db: Client, env: ServerEn
   // Fresh session for this login. The attempt's stored session_id is rotated
   // by /api/exam/start, so an open exam tab stays valid until a new start.
   const sid = nanoid();
-  const token = await signToken(env.sessionSecret, { sub: participantId, sid }, PARTICIPANT_MAX_AGE);
+  const token = await signToken(
+    env.sessionSecret,
+    { sub: participantId, sid },
+    PARTICIPANT_MAX_AGE,
+  );
 
   return json(
     {

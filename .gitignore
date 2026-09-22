@@ -1,52 +1,81 @@
-# Logs
-logs
+# Dependencies & Package Managers
+node_modules/
+.pnpm-store/
+
+# Build & Compilation Outputs
+dist/
+dist-ssr/
+build/
+out/
+.output/
+.vinxi/
+.tanstack/
+.nitro/
+.cache/
+*.tsbuildinfo
+api-build.txt
+coverage/
+
+# Temporary & Log Files
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+build.log
+bun-install.log
+.tmp-*/
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
 
-node_modules
-dist
-dist-ssr
-.output
-.vinxi
-.tanstack/**
-.nitro
+# Database Files & Local Storage
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+local.db
+
+# Environment Variables & Local Configs
 *.local
 .env
 .env.*
 !.env.example
-*.db
-*.sqlite
 
-# Wrangler / Cloudflare
+# Deployment Platforms
+.vercel/
 .wrangler/
 .dev.vars
 
-# Vercel
-.vercel/
+# Python & Diagnostic Caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+*.egg-info/
+.uv/
 
-# Generated / scratch
-api-build.txt
-*.tsbuildinfo
-.tmp-*/
-
-# Local agent skills (vendored docs, not part of the app)
+# Local Agent & Tooling Caches
 .agents/
 skills-lock.json
 
-# One-off developer scripts
-check-db.ts
-
-# Editor directories and files
+# IDE & OS Metadata
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+.DS_Store
+Thumbs.db
+Desktop.ini

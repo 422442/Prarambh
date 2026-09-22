@@ -19,7 +19,11 @@ const schema = z.object({
   kind: z.enum(["periodic", "violation"]),
 });
 
-export async function handleExamSnapshot(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleExamSnapshot(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   const body = await readJson(request, schema);
   const claims = await requireParticipantClaims(request, env);
   const attemptRow = await getAttemptByParticipant(db, claims.sub);
@@ -54,7 +58,14 @@ export async function handleExamSnapshot(request: Request, db: Client, env: Serv
 
   await db.execute({
     sql: "INSERT INTO snapshots (id, attempt_id, blob_url, kind, face_count, taken_at) VALUES (?, ?, ?, ?, ?, ?)",
-    args: [crypto.randomUUID(), attempt.id, blob.url, body.kind, body.faceCount, Math.floor(Date.now() / 1000)] as any,
+    args: [
+      crypto.randomUUID(),
+      attempt.id,
+      blob.url,
+      body.kind,
+      body.faceCount,
+      Math.floor(Date.now() / 1000),
+    ] as (string | number | null)[],
   });
 
   return json({ ok: true, stored: true });

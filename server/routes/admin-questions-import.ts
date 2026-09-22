@@ -65,19 +65,39 @@ export function parseQuestionsCsv(csv: string): { rows: CsvRow[]; errors: CsvErr
     const correct = (data["correct"] ?? "").trim().toUpperCase();
 
     if (!text) errors.push({ row: rowNumber, message: "Question text is required." });
-    if (!a || !b || !c || !d) errors.push({ row: rowNumber, message: "All four options are required." });
+    if (!a || !b || !c || !d)
+      errors.push({ row: rowNumber, message: "All four options are required." });
     if (correct !== "A" && correct !== "B" && correct !== "C" && correct !== "D") {
       errors.push({ row: rowNumber, message: `"correct" must be A, B, C or D.` });
     }
-    if (text && a && b && c && d && (correct === "A" || correct === "B" || correct === "C" || correct === "D")) {
-      rows.push({ row: rowNumber, text, optionA: a, optionB: b, optionC: c, optionD: d, correctOption: correct });
+    if (
+      text &&
+      a &&
+      b &&
+      c &&
+      d &&
+      (correct === "A" || correct === "B" || correct === "C" || correct === "D")
+    ) {
+      rows.push({
+        row: rowNumber,
+        text,
+        optionA: a,
+        optionB: b,
+        optionC: c,
+        optionD: d,
+        correctOption: correct,
+      });
     }
   });
 
   return { rows, errors };
 }
 
-export async function handleAdminQuestionsImport(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleAdminQuestionsImport(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   await requireAdmin(request, env);
   const body = await readJson(request, schema);
   const { rows, errors } = parseQuestionsCsv(body.csv);
@@ -95,7 +115,11 @@ export async function handleAdminQuestionsImport(request: Request, db: Client, e
 
   if (body.importMode === "replace_all") {
     if (await hasAttemptInProgress(db)) {
-      throw new ApiError(409, "exam_in_progress", "Questions cannot be replaced while an exam is in progress.");
+      throw new ApiError(
+        409,
+        "exam_in_progress",
+        "Questions cannot be replaced while an exam is in progress.",
+      );
     }
     const anyAttempt = await db.execute({ sql: "SELECT 1 FROM attempts LIMIT 1", args: [] });
     if (anyAttempt.rows.length > 0) {
@@ -104,14 +128,28 @@ export async function handleAdminQuestionsImport(request: Request, db: Client, e
     await db.execute({ sql: "DELETE FROM answers", args: [] });
     await db.execute({ sql: "DELETE FROM questions", args: [] });
   } else if (await hasAttemptInProgress(db)) {
-    throw new ApiError(409, "exam_in_progress", "Questions cannot be added while an exam is in progress.");
+    throw new ApiError(
+      409,
+      "exam_in_progress",
+      "Questions cannot be added while an exam is in progress.",
+    );
   }
 
   const now = nowSec();
   for (const row of rows) {
     await db.execute({
       sql: "INSERT INTO questions (id, text, option_a, option_b, option_c, option_d, correct_option, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)",
-      args: [randomUUID(), row.text, row.optionA, row.optionB, row.optionC, row.optionD, row.correctOption, now, now],
+      args: [
+        randomUUID(),
+        row.text,
+        row.optionA,
+        row.optionB,
+        row.optionC,
+        row.optionD,
+        row.correctOption,
+        now,
+        now,
+      ],
     });
   }
 

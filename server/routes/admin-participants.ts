@@ -31,13 +31,20 @@ const SORTABLE = {
   submitted_at: "a.submitted_at",
 } as const;
 
-export async function handleAdminParticipants(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleAdminParticipants(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   await requireAdmin(request, env);
   await finalizeExpiredAttempts(db);
 
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
-  const pageSize = Math.min(100, Math.max(5, Number(url.searchParams.get("pageSize") ?? "20") || 20));
+  const pageSize = Math.min(
+    100,
+    Math.max(5, Number(url.searchParams.get("pageSize") ?? "20") || 20),
+  );
   const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
   const status = url.searchParams.get("status") ?? "all";
   const flagged = url.searchParams.get("flagged") === "1";
@@ -96,7 +103,8 @@ export async function handleAdminParticipants(request: Request, db: Client, env:
   const rows: ParticipantRow[] = list.rows.map((row) => {
     const pid = String(row.pid);
     const attemptId = row.aid == null ? null : String(row.aid);
-    const status = attemptId == null ? "registered" : row.status === "submitted" ? "submitted" : "in_progress";
+    const status =
+      attemptId == null ? "registered" : row.status === "submitted" ? "submitted" : "in_progress";
     return {
       participantId: pid,
       name: String(row.name),
@@ -166,7 +174,8 @@ export async function fetchAllResultRows(
   return list.rows.map((row) => {
     const pid = String(row.pid);
     const attemptId = row.aid == null ? null : String(row.aid);
-    const status = attemptId == null ? "registered" : row.status === "submitted" ? "submitted" : "in_progress";
+    const status =
+      attemptId == null ? "registered" : row.status === "submitted" ? "submitted" : "in_progress";
     return {
       participantId: pid,
       name: String(row.name),
@@ -184,4 +193,3 @@ export async function fetchAllResultRows(
     };
   });
 }
-

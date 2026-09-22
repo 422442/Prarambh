@@ -6,7 +6,10 @@ export const Route = createFileRoute("/admin/login")({
   head: () => ({
     meta: [
       { title: "Admin Login — Prarambh" },
-      { name: "description", content: "Administrative login for the Prarambh entrance exam portal." },
+      {
+        name: "description",
+        content: "Administrative login for the Prarambh entrance exam portal.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -32,10 +35,19 @@ function AdminLoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      let data: { error?: { code?: string; message?: string } | string; message?: string } | null =
+        null;
+      try {
+        data = await res.json();
+      } catch {
+        // Response was not JSON
+      }
 
       if (!res.ok) {
-        setError(data.message || "Login failed. Please try again.");
+        const errObj = typeof data?.error === "object" && data?.error !== null ? data.error : null;
+        const serverMessage =
+          errObj?.message || data?.message || (typeof data?.error === "string" ? data.error : null);
+        setError(serverMessage || `Server error (${res.status}). Please try again.`);
         setLoading(false);
         return;
       }
@@ -43,7 +55,11 @@ function AdminLoginPage() {
       setAdminSession(true);
       navigate({ to: "/admin" });
     } catch (err) {
-      setError("Network error. Please check your connection.");
+      setError(
+        err instanceof Error && err.message
+          ? `Network error: ${err.message}`
+          : "Network error. Please check your connection.",
+      );
       setLoading(false);
     }
   }
@@ -53,7 +69,9 @@ function AdminLoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <span className="mono-label text-2xl font-bold tracking-wider text-deep-green">PRARAMBH</span>
+          <span className="mono-label text-2xl font-bold tracking-wider text-deep-green">
+            PRARAMBH
+          </span>
           <div className="mt-2 inline-block rounded-full bg-deep-green/10 px-3 py-1 text-xs font-semibold text-deep-green">
             Admin Portal
           </div>

@@ -19,7 +19,11 @@ const schema = z.object({
   reason: z.enum(["manual"]).default("manual"),
 });
 
-export async function handleExamSubmit(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleExamSubmit(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   const body = await readJson(request, schema);
   const claims = await requireParticipantClaims(request, env);
   const attemptRow = await getAttemptByParticipant(db, claims.sub);
@@ -39,7 +43,13 @@ export async function handleExamSubmit(request: Request, db: Client, env: Server
   if (now > attempt.ends_at + GRACE_SECONDS) {
     // Past deadline: finalize from saved answers with time_up semantics.
     reason = "time_up";
-    const finalized = await finalizeAttempt(db, attempt.id, reason, Math.max(now, attempt.ends_at), settings);
+    const finalized = await finalizeAttempt(
+      db,
+      attempt.id,
+      reason,
+      Math.max(now, attempt.ends_at),
+      settings,
+    );
     return json({ status: "submitted", submitReason: finalized.submit_reason });
   }
 

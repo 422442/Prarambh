@@ -22,7 +22,11 @@ function formatDuration(totalSeconds: number | null): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export async function handleAdminExport(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleAdminExport(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   await requireAdmin(request, env);
   await finalizeExpiredAttempts(db);
 

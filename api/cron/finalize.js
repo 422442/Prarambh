@@ -147,7 +147,14 @@ async function sendWebResponse(web, res) {
     if (name.toLowerCase() === "set-cookie") return;
     res.setHeader(name, value);
   });
-  const cookies = web.headers.getSetCookie?.() ?? [];
+  let cookies = [];
+  if (typeof web.headers.getSetCookie === "function") {
+    cookies = web.headers.getSetCookie();
+  }
+  if (cookies.length === 0) {
+    const rawCookie = web.headers.get("set-cookie");
+    if (rawCookie) cookies = [rawCookie];
+  }
   if (cookies.length > 0) res.setHeader("set-cookie", cookies);
   const buffer = await web.arrayBuffer();
   if (buffer.byteLength > 0) {
@@ -279,7 +286,10 @@ async function finalizeAttempt(db, attemptId, reason, submittedAtSec = nowSec(),
     args: [attemptId]
   });
   for (const row of answerRows.rows) {
-    answers.set(String(row.question_id), row.selected_option == null ? null : String(row.selected_option));
+    answers.set(
+      String(row.question_id),
+      row.selected_option == null ? null : String(row.selected_option)
+    );
   }
   let correct = 0;
   let wrong = 0;
@@ -316,7 +326,16 @@ async function finalizeAttempt(db, attemptId, reason, submittedAtSec = nowSec(),
               unanswered_count = ?,
               time_taken_seconds = ?
           WHERE id = ? AND status = 'in_progress'`,
-    args: [reason, submittedAt, scored.score, scored.correct, scored.wrong, scored.unanswered, taken, attemptId]
+    args: [
+      reason,
+      submittedAt,
+      scored.score,
+      scored.correct,
+      scored.wrong,
+      scored.unanswered,
+      taken,
+      attemptId
+    ]
   });
   const fresh = await getAttemptById(db, attemptId);
   return fresh ?? { ...existing, status: "submitted", submit_reason: reason, submitted_at: submittedAt };

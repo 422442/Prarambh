@@ -28,7 +28,6 @@ npm run dev
 - React
 - Tailwind CSS
 
-
 ## Admin Portal
 
 Access the admin portal at `/admin/login` with your administrator credentials.

@@ -7,9 +7,17 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Prarambh — Register" },
-      { name: "description", content: "Register with your name and email to take the 45-minute, 60-question Prarambh entrance exam." },
+      {
+        name: "description",
+        content:
+          "Register with your name and email to take the 45-minute, 60-question Prarambh entrance exam.",
+      },
       { property: "og:title", content: "Prarambh — Register" },
-      { property: "og:description", content: "Register with your name and email to take the 45-minute, 60-question Prarambh entrance exam." },
+      {
+        property: "og:description",
+        content:
+          "Register with your name and email to take the 45-minute, 60-question Prarambh entrance exam.",
+      },
     ],
   }),
   component: LoginPage,
@@ -30,7 +38,8 @@ function LoginPage() {
     const cleanName = name.trim();
     const cleanEmail = normalizeEmail(email);
     if (cleanName.length < 2) return setError("Please enter your full name.");
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanEmail)) return setError("Please enter a valid email address.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanEmail))
+      return setError("Please enter a valid email address.");
 
     const existing = getAttempt(cleanEmail);
     if (existing?.status === "submitted") {

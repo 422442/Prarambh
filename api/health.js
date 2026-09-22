@@ -147,7 +147,14 @@ async function sendWebResponse(web, res) {
     if (name.toLowerCase() === "set-cookie") return;
     res.setHeader(name, value);
   });
-  const cookies = web.headers.getSetCookie?.() ?? [];
+  let cookies = [];
+  if (typeof web.headers.getSetCookie === "function") {
+    cookies = web.headers.getSetCookie();
+  }
+  if (cookies.length === 0) {
+    const rawCookie = web.headers.get("set-cookie");
+    if (rawCookie) cookies = [rawCookie];
+  }
   if (cookies.length > 0) res.setHeader("set-cookie", cookies);
   const buffer = await web.arrayBuffer();
   if (buffer.byteLength > 0) {

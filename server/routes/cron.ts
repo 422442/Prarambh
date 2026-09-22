@@ -20,9 +20,12 @@ export function assertCronSecret(request: Request, env: ServerEnv): void {
   }
 }
 
-export async function handleCronFinalize(request: Request, db: Client, env: ServerEnv): Promise<Response> {
+export async function handleCronFinalize(
+  request: Request,
+  db: Client,
+  env: ServerEnv,
+): Promise<Response> {
   assertCronSecret(request, env);
   const finalized = await finalizeExpiredAttempts(db);
   return json({ ok: true, finalized });
 }
-
